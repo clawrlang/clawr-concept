@@ -1,3 +1,8 @@
+# C Runtime
+
+Here is a working runtime implementation. It is used in the [proof of concept repository](https://github.com/clawrlang/clawr-poc). It is incomplete, because it does not support inheritance or weak references. But the existing functionality has been tested.
+
+```c
 #ifndef CLAWR_RUNTIME_H
 #define CLAWR_RUNTIME_H
 
@@ -32,7 +37,7 @@ static const uintptr_t __clawr_ISOLATION_FLAG = (uintptr_t)1 << (sizeof(uintptr_
 static const uintptr_t __clawr_REFC_BITMASK   = ~(__clawr_COPYING_FLAG | __clawr_ISOLATION_FLAG);
 
 /// @brief Reference Semantics (`ref` variable) - One entity, multiple variables
-static const uintptr_t __clawr_REFERENCE      = 0;
+static const uintptr_t __clawr_SHARED         = 0;
 /// @brief Isolation Semantics (`let`, `mut` variable) - Variables modified independently
 static const uintptr_t __clawr_ISOLATED       = __clawr_ISOLATION_FLAG;
 
@@ -172,7 +177,7 @@ static inline void* isolateRC(__clawr_rc_header* const header) {
     if (!header) return NULL;
     // The ISOLATION flag never changes, so data races are irrelevant
     // Access directly instead of through atomic_load()
-    if ((header->refs & __clawr_ISOLATION_FLAG) == __clawr_REFERENCE) {
+    if ((header->refs & __clawr_ISOLATION_FLAG) == __clawr_SHARED) {
         // No copy for reference semantics
         return header;
     }
@@ -207,3 +212,4 @@ static inline void* isolateRC(__clawr_rc_header* const header) {
 }
 
 #endif /* CLAWR_RUNTIME_H */
+```
