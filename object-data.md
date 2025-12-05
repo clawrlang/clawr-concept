@@ -89,6 +89,9 @@ service UserRepository {
 }
 ```
 
+A `service` type can only use `SHARED` semantics. Variables must always be declared as `ref`.
+As it’s data is defined externally, making isolated copies of it’s memory will only cause weird behaviour.
+
 ## Visibility and Headers
 
 I have not considered visibility modifiers. All methods are public and all fields internal to the `object` according to the current conception. An early idea, however, was to support header files. A published header file could declare “public” APIs, while a private header could declare “package-internal” code. Code that is “private” would only be declared in the implementation-file.
