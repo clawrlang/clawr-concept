@@ -99,4 +99,4 @@ Headers are, however, rather complex to use. That might be the main problem with
 
 There is a [proof of concept repository](https://github.com/clawrlang/clawr-poc) that implements a compiler and runtime for Clawr, demonstrating a syntax for `object` and `data`, and exploring a (rudimentary) runtime implementation of polymorphism (via a `trait` keyword).
 
-It also implements the other big language idea of Clawr: a [variable-driven semantics model](./variable-scope.md)
+It also implements the other big language idea of Clawr: a [variable-driven semantics model](variable-scope.md)
