@@ -192,8 +192,23 @@ The compiler enforces the following rules:
 
 Different semantics cannot be mixed without explicit intent. There is no way to maintain two different sets of semantic guarantees for the same memory block. Therefore, a copy with different semantics must be created immediately at assignment. If this is done implicitly, it can lead to confusion and bugs.
 
+### Function Parameters and Return Values
+
+Function parameters and return values should also respect semantics:
+
+- Parameters default to `let` semantics (isolated). Passing a `ref` requires explicit copy.
+- Each function can specify if it returns `ref` or `let`/`mut` semantics.
+
+Idea/exploration: What if parameters had their own semantics? They could be something like:
+
+1. require immutable, isolated values; does not mutate or share state and reqiures that no other thread can change it while it’s working.
+2. allow reference, but promise not to mutate: safe to pass `let` or `ref` variables without copying.
+3. explicitly mutates received structure: requires `ref` variables; allows mutation of shared state.
+4. temporarily borrows value for mutation: accepts `mut` or `ref` variables; might be dangerous to allow if the value can “escape.”
+5. and other options?
+
 ## Proof of Concept
 
-There is a [proof of concept repository](https://github.com/clawrlang/clawr-poc) that implements a compiler and runtime for Clawr, demonstrating the variable scope and semantics model described above.
+There is a [proof of concept repository](https://github.com/clawrlang/clawr-poc) that implements a compiler and runtime for Clawr, demonstrating the variable scope and semantics model described above. Its main focus is showing how the runtime can manage memory with the proposed semantics while providing safety guarantees.
 
 It also implements the other big language idea of Clawr: enforcing [encapsulation vs pure data segregation](./object-data.md).
