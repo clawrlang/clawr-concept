@@ -1,0 +1,73 @@
+#ifndef CLAWR_STRING_H
+#define CLAWR_STRING_H
+
+#include <stdarg.h>   // va_list, va_start, va_end
+#include <stdio.h>    // vsnprintf
+#include <stdlib.h>   // malloc, size_t, NULL
+#include "clawr-runtime.h"
+
+// data string {
+//     length: integer
+// }
+typedef struct {
+    __clawr_rc_header header;
+    struct {
+        size_t length;
+        char buffer[];
+    } string;
+} string;
+
+// trait HasStringRepresentation {
+//     func toString() -> string
+// }
+typedef struct {
+    string* (*toString)(void* self);
+} HasStringRepresentation_vtable;
+static const __clawr_trait_descriptor HasStringRepresentation_trait = { .name = "HasStringRepresentation" };
+
+static inline string* string_toString(void* self) {
+    return retainRC(self);
+}
+static const HasStringRepresentation_vtable string_HasStringRepresentation_vtable = {
+    .toString = string_toString
+};
+static __clawr_type_info __string_info = {
+    .size = sizeof(string),
+    .trait_descs = (__clawr_trait_descriptor*[]) { &HasStringRepresentation_trait },
+    .trait_vtables = (void*[]) { &string_HasStringRepresentation_vtable },
+    .trait_count = 1,
+};
+
+static inline string* string_format(const char* const format, ...) {
+    va_list args;
+    va_start(args, format);
+
+    // Determine the required buffer size
+    int length = vsnprintf(NULL, 0, format, args) + 1;
+    string* s = (string*) __clawr_alloc(__string_info.size + length);
+    s->header.is_a = &__string_info;
+    atomic_init(&s->header.refs, __clawr_ISOLATED | 1);
+
+    // Format the string into the buffer
+    vsnprintf(s->string.buffer, length, format, args);
+    s->string.length = length - 1; // Exclude the null terminator
+    va_end(args);
+    return s;
+}
+
+/// @brief Print a string value to stdout
+/// @param s the string value
+static inline void print(__clawr_rc_header* const i) {
+    HasStringRepresentation_vtable* vtable =
+        (HasStringRepresentation_vtable*) __clawr_trait_vtable(i, &HasStringRepresentation_trait);
+    if (!vtable) {
+        printf("vtable not found!!");
+        exit(EXIT_FAILURE);
+    }
+
+    string* s = vtable->toString(i);
+    printf("%s\n", s->string.buffer);
+    s = releaseRC(s);
+}
+
+#endif /*.CLAWR_STRING_H */

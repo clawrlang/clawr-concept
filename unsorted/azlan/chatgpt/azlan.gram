@@ -1,0 +1,105 @@
+# Azlan PEG Grammar with Error Handling Enhancements
+
+# Declarations
+azlan_header          <- (top_level_declaration / variable_declaration)*
+top_level_declaration <- trait / object_declaration / struct / enum / function_declaration
+
+reserved_keywords <- "let" / "mut" / "ref" / "func" / "pure" / "async" / "object" / "service" / "enum" / "struct" / "bitstruct"
+identifier <- !reserved_keywords [a-zA-Z_] [a-zA-Z0-9_]* / { "Expected an identifier" }
+type_annotation       <- identifier ('<' identifier ('?' / ',' identifier)? '>')? ('?'?)
+type_annotations      <- type_annotation (',' type_annotation)*
+
+# Top-level Variables and Functions
+variable_declaration  <- ("let" / "mut" / "ref") identifier (':' type_annotation)?
+function_declaration <- ("func" / "pure" / "async") method_declaration
+parameters <- parameter (',' parameter)*
+parameter  <- identifier identifier? ':' type_annotation
+
+# Type declarations
+type_declaration <- trait / object / struct / bitstruct / enum
+
+# Objects, Traits and Roles
+trait                <- ("trait" / "role") type_annotation (':' supertypes)? '{' declarative_body '}'
+object_declaration   <- ("object" / "service") type_annotation (':' supertypes)? '{' declarative_body '}'
+declarative_body     <- method_declaration* ("mutating:" method_declaration*)? ("static:" (method_declaration / op_declaration / type_declaration)*)?
+method_declaration   <- identifier '(' parameters? ')' (':' type_annotation)?
+
+# Structs and BitStructs (single-register structs)
+struct      <- "struct" type_annotation '{' struct_body '}'
+struct_body <- field*
+field       <- ("let" / "mut")? identifier ':' type_annotation
+
+bitstruct       <- "bitstruct" type_annotation '{' bitstruct_body '}'
+bitstruct_body  <- bitstruct_field*
+bitstruct_field <- ("let" / "mut")? identifier (':' bitstruct_field_type)?
+bitstruct_field_type <- ("integer" '%' [0-9]+ [su]) / ("bitfield" '%' [0-9]+) / boolean
+
+# Enum
+enum       <- "enum" identifier '{' enum_body '}'
+enum_body  <- case*
+case       <- "case" identifier ('(' parameters ')')?
+
+# Implementation
+azlan_program        <- (top_level_definition / variable_definition / expression / control_structure)*
+top_level_definition <- trait / object / struct / enum / function_definition
+block                <- '{' azlan_program '}'
+
+variable_definition <- variable_declaration ('=' expression)?
+
+# Objects and Services
+object      <- ("object" / "service") type_annotation (':' supertypes)? '{' object_body '}'
+object_body <- method* ("mutating:" method*)? ("static:" (method / op)*)?
+method      <- identifier '(' parameters ')' ':' type_annotation block
+
+# Control Structures
+control_structure <- if_statement / while_loop / for_loop
+if_statement <- "if" '(' expression ')' block ("else" block)?
+while_loop <- "while" '(' expression ')' block
+for_loop <- "for" '(' variable_declaration "in" expression ')' block
+
+# Functions with Contracts
+function_definition <- function_declaration contract? block
+contract <- '{' require_statement* ensure_statement* '}'
+require_statement <- "require" expression (',' string)? # Preconditions
+ensure_statement  <- "ensure" expression (',' string)? # Postconditions
+
+# Defer Statement
+defer_statement <- "defer" block
+scope <- (defer_statement / statement)* # Allows stacked defer blocks
+
+# Modules and Imports
+module_declaration <- "module" identifier
+import_statement <- "import" identifier ("as" identifier)?
+
+# Literals
+numeric     <- binary / ternary / octal / hexadecimal / decimal
+bitfield    <- binary / hexadecimal
+tritfield   <- ternary_b / ternary_u
+decimal     <- [1-9] [0-9_.]*
+binary      <- "0b" [01] [01_]*
+ternary_b   <- "0t" [T01] [T01_]*
+ternary_u   <- "0t" [012] [012_]*
+octal       <- "0o" [0-7] [0-7_]*
+hexadecimal <- "0x" [1-9A-F] [0-9A-F_]*
+string      <- '"' (!["\\] / '\\' ["\\nrt"])* '"'
+regex       <- '/' (![\/\n] / '\\' . / .)* '/' [a-zA-Z]*
+
+# Expressions
+expression <- ternary_op / assignment / logical_or / logical_and / equality_op / result_chaining / forced_unwrapping / binary_op / unary_op / primary
+logical_or <- logical_and ("||" logical_and)*
+logical_and <- equality_op ("&&" equality_op)*
+equality_op <- relational_op ("==" relational_op)*
+result_chaining <- expression '?' # Propagates None or Err
+forced_unwrapping <- expression '!' # Forces a value or panics
+assignment      <- identifier '=' expression
+ternary_op      <- expression '?' expression ':' expression
+binary_op       <- expression binary_operator expression
+binary_operator <- '+' / '-' / '*' / '/' / '%' / "==" / "=~" # =~ for regex test
+unary_op        <- unary_prefix_op / unary_suffix_op
+unary_prefix_op <- unary_operator expression
+unary_operator  <- '!' / '~'
+unary_suffix_op <- expression '!'
+primary         <- identifier / numeric / string / boolean / function_call / "(" expression ")"
+
+function_call <- identifier '(' arguments? ')'
+arguments     <- expression (',' expression)*

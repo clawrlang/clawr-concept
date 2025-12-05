@@ -44,6 +44,10 @@ Here are some of the big ideas that Clawr is exploring:
 - [Variable Scope and Semantics](./variable-scope.md): Enforcing clear variable semantics to avoid unintended shared state and side effects.
 - [Object vs Data Segregation](./object-data.md): Enforcing encapsulation for objects in business applications, while allowing pure, exposed data structures for big-data analysis.
 
+## Get Started
+
+Let's start with something simple — [your first Clawr program](./unsorted/clawr-old/tutorial/hello-world.md).
+
 There is a [proof of concept repository](https://github.com/clawrlang/clawr-poc) that implements a compiler and runtime for Clawr, demonstrating the variable scope and semantics model described above.
 
 ## Contributing
