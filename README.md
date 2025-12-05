@@ -1,6 +1,7 @@
 # Clawr Programming Language
 
-![Rawr!|150](./images/rawr.png)
+![Clawr’s unnamed mascot–a roaring lion with an eye-patch](./images/clawr-lion.png)
+
 This repository exists to collect ideas and concepts for a new programming language, Clawr.
 
 ## the Philosophy of Clawr
