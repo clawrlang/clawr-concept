@@ -151,9 +151,9 @@ archiveToDatabase(finalScore)  // Safe to share
 
 ### Memory Structure
 
-To enforce isolation semantics, the runtime will need to manage memory with metadata indicating whether a memory block is `ISOLATED` or a shared `REFERENCE`.
+To enforce isolation semantics, the runtime will need to manage memory with metadata indicating whether a memory block is `ISOLATED` or a shared `SHARED`.
 
-- **Semantics flag**: `ISOLATED` (for `let`/`mut` variables) or `REFERENCE` (for `ref` variables)
+- **Semantics flag**: `ISOLATED` (for `let`/`mut` variables) or `SHARED` (for `ref` variables)
 - **Reference Counter**: To track how many variables reference a memory block
 - **Type Information**: To enable polymorphic behaviour and method dispatch, and to support runtime type-checking if needed
 
@@ -166,7 +166,7 @@ The implementation should use automatic reference counting (ARC) with copy-on-wr
     - Memory is flagged ISOLATED, AND
     - Reference count > 1, AND
     - A mutating operation is performed
-3. Never copy REFERENCE memory: This would violate the shared-state contract
+3. Never copy SHARED memory: This would violate the shared-state contract
 
 This provides the safety of value semantics with the performance of reference semantics.
 
