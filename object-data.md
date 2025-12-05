@@ -55,15 +55,18 @@ factory:
         cents: d * 100 + cents
     }
     func amount(_ a: real) => {
-        cents: integer(Math.round(a * 100)
+        cents: integer(Math.round(a * 100))
     }
 
 data:
     let cents: integer
 }
 
+// A companion object defines “static” members and methods.
+// It has full access to the internal data of the main object type.
+
 companion Money {
-    let zero: Money = Money.cents(0)
+    let zero: Money = { cents: 0 }
 }
 ```
 
