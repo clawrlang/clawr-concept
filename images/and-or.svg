@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 1044 933" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+    <g id="Artboard1" transform="matrix(1.039841,0,0,0.925595,-650.940239,-330.4375)">
+        <rect x="626" y="357" width="1004" height="1008" style="fill:none;"/>
+        <g transform="matrix(0.961686,0,0,1.080386,623.114943,357)">
+            <path d="M313,519.75L313,577.25C313,593.118 300.118,606 284.25,606L109.75,606C93.882,606 81,593.118 81,577.25L81,519.75C81,503.882 93.882,491 109.75,491L284.25,491C300.118,491 313,503.882 313,519.75Z" style="fill:rgb(208,208,38);"/>
+        </g>
+        <g transform="matrix(0.961686,0,0,1.080386,937.586207,364.562701)">
+            <path d="M313,519.75L313,577.25C313,593.118 300.118,606 284.25,606L109.75,606C93.882,606 81,593.118 81,577.25L81,519.75C81,503.882 93.882,491 109.75,491L284.25,491C300.118,491 313,503.882 313,519.75Z" style="fill:rgb(208,208,38);"/>
+        </g>
+        <g transform="matrix(0.961686,0,0,1.080386,1250.1341,377.527331)">
+            <path d="M313,519.75L313,577.25C313,593.118 300.118,606 284.25,606L109.75,606C93.882,606 81,593.118 81,577.25L81,519.75C81,503.882 93.882,491 109.75,491L284.25,491C300.118,491 313,503.882 313,519.75Z" style="fill:rgb(208,208,38);"/>
+        </g>
+        <g>
+            <g transform="matrix(0.961686,0,0,1.080386,943.356322,-111.88746)">
+                <path d="M313,519.75L313,577.25C313,593.118 300.118,606 284.25,606L109.75,606C93.882,606 81,593.118 81,577.25L81,519.75C81,503.882 93.882,491 109.75,491L284.25,491C300.118,491 313,503.882 313,519.75Z" style="fill:rgb(208,208,38);"/>
+            </g>
+            <g transform="matrix(0.961686,0,0,1.080386,40.333333,-1213.881029)">
+                <text x="1025px" y="1600.75px" style="font-family:'Futura-Bold', 'Futura', sans-serif;font-weight:700;font-size:125px;fill:rgb(0,52,255);">–</text>
+                <g transform="matrix(125,0,0,125,1237.25,1600.75)">
+                </g>
+                <text x="1152.375px" y="1600.75px" style="font-family:'Futura-Bold', 'Futura', sans-serif;font-weight:700;font-size:125px;fill:rgb(255,1,0);">–</text>
+            </g>
+        </g>
+        <g transform="matrix(0.657597,0,0,0.724278,346.741661,-58.046471)">
+            <ellipse cx="945" cy="1424.5" rx="475" ry="484.5" style="fill:none;stroke:rgb(255,0,0);stroke-width:30.77px;"/>
+        </g>
+        <g transform="matrix(0.657597,0,0,0.724278,660.25124,-55.8857)">
+            <ellipse cx="945" cy="1424.5" rx="475" ry="484.5" style="fill:none;stroke:rgb(0,19,255);stroke-width:30.77px;"/>
+        </g>
+        <g transform="matrix(0.961686,0,0,1.080386,-282.793103,-739.59164)">
+            <text x="1025px" y="1600.75px" style="font-family:'Futura-Bold', 'Futura', sans-serif;font-weight:700;font-size:125px;fill:rgb(0,52,255);">–</text>
+            <g transform="matrix(125,0,0,125,1237.375,1600.75)">
+            </g>
+            <text x="1152.375px" y="1600.75px" style="font-family:'Futura-Bold', 'Futura', sans-serif;font-weight:700;font-size:125px;fill:rgb(255,1,0);">+</text>
+        </g>
+        <g transform="matrix(0.961686,0,0,1.080386,347.111111,-715.823151)">
+            <text x="1025px" y="1600.75px" style="font-family:'Futura-Bold', 'Futura', sans-serif;font-weight:700;font-size:125px;fill:rgb(0,52,255);">+</text>
+            <g transform="matrix(125,0,0,125,1237.375,1600.75)">
+            </g>
+            <text x="1152.5px" y="1600.75px" style="font-family:'Futura-Bold', 'Futura', sans-serif;font-weight:700;font-size:125px;fill:rgb(255,1,0);">–</text>
+        </g>
+        <g transform="matrix(0.961686,0,0,1.080386,32.639847,-724.466238)">
+            <text x="1025px" y="1600.75px" style="font-family:'Futura-Bold', 'Futura', sans-serif;font-weight:700;font-size:125px;fill:rgb(0,52,255);">+</text>
+            <g transform="matrix(125,0,0,125,1237.5,1600.75)">
+            </g>
+            <text x="1152.5px" y="1600.75px" style="font-family:'Futura-Bold', 'Futura', sans-serif;font-weight:700;font-size:125px;fill:rgb(255,1,0);">+</text>
+        </g>
+    </g>
+</svg>
