@@ -1,8 +1,8 @@
-A `tritfield` is different from a `bitfield`. The way to filter a `tritfield` is not to `a & mask`, it is `a MUL mask`.
+A `tritfield` is different from a `bitfield`. The way to filter a `tritfield` is not `a & mask`, it is `a MUL mask`.
 
 When working with bit-fields in C and C-influenced languages, there are some operations and strategies that are often employed:
 
-- `a & mask`: filters the bits in `a` returning zero for every bit position that is zero in the mask.
+- `a & mask`: filters the bits in `a`, returning zero for every bit position that is zero in the mask.
 - `~mask`: inverts a mask. Quick way to get a filter for “everything *except* certain bits”
 - `a &= ~mask`: unsets specific bits (where `mask` is 1)
 - `a |= mask`: sets specific bits (where `mask` is 1)

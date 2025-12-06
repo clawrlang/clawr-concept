@@ -2,7 +2,7 @@
 
 I’m unsure of the historical details, but [George Boole](https://en.wikipedia.org/wiki/George_Boole) is often credited as the father of binary logic. Aristotle is often mentioned as well, but the understanding of logic used in modern computers is called *Boolean Algebra*. And the simplest and most essential of all data types is the `boolean` in virtually all programming languages. (It may be spelled differently—`Boolean`, `bool`, `BOOL`, `Bool` etc—but all spellings hearken to George Boole’s name. In Clawr, the spelling is `boolean`.)
 
-Boole saw logic as binary. A `boolean` value can be either true ($1$) or false ($0$). Some have explored other forms of logic with more possible values. See the section on [Ternary Logic](ternary-algebra.md) for more elaboration.
+Boole saw logic as binary. A `boolean` value can be either true ($1$) or false ($0$). Some have explored other forms of logic with more possible values. See the section on [Ternary Logic](./ternary/ternary-algebra.md) for more elaboration.
 
 Boolean values aren’t numbers, but there is a kind of arithmetic that applies to them. This is often referred to as *Boolean Algebra*. It consists of two binary operations: AND ($\times$) and OR ($+$), and one unary operation: NOT ($\neg$). The NOT operation negates the value of the operand: $\neg 1 = 0$ and $\neg 0 = 1$.
 

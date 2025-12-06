@@ -1,12 +1,12 @@
 # Ternary Algebra
 
-Many have considered [Boolean algebra](boolean-algebra.md) too limited. Even Aristotle considered statements of the future as neither definitively true nor definitively false. Many philosophers and mathematicians have since imagined multi-valued truth. Gödel went so far as to create a system that allows *infinite degrees* of truth between 0 (absolutely false) and 1 (absolutely true).
+Many have considered [Boolean algebra](../boolean-algebra.md) too limited. Even Aristotle considered statements of the future as neither definitively true nor definitively false. Many philosophers and mathematicians have since imagined multi-valued truth. Gödel went so far as to create a system that allows *infinite degrees* of truth between 0 (absolutely false) and 1 (absolutely true).
 
 The most obvious extension to Boolean binary is to add a single extra state, an indeterminate or “unknown” state. We can notate the states as `-` for false, `+` for truth and `0` for the unknown state.
 
 There are also other notations. In Clawr, the `ternary` type is an `enum` with the three possible values `up` (true), `down` (false) and `zero`. To abbreviate those as single characters, we could use `U`, `D` and `0` respectively (and that’s how we represent ternary digits in a `tritfield`). For this document, the symbols `-`, `+` are probably the most illustrative. They are also the most often used in other literature.
 
-Basic dyadic (two inputs) logic operations can be translated to ternary. As we remember, in [Boolean algebra](boolean-algebra.md):
+Basic dyadic (two inputs) logic operations can be translated to ternary. As we remember, in [Boolean algebra](../boolean-algebra.md):
 
 | $a$ | $b$ | $a \ \mathsf{AND} \ b$ | $a \ \mathsf{OR} \ b$ | $a \ \mathsf{XOR} \ b$ | $a \ \mathsf{IMPL} \ b$ |
 | :-: | :-: | :--------------------: | :-------------------: | :--------------------: | :---------------------: |
