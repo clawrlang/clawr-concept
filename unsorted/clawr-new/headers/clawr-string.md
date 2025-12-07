@@ -1,3 +1,4 @@
+```c
 #ifndef CLAWR_STRING_H
 #define CLAWR_STRING_H
 
@@ -71,3 +72,4 @@ static inline void print(__clawr_rc_header* const i) {
 }
 
 #endif /*.CLAWR_STRING_H */
+```

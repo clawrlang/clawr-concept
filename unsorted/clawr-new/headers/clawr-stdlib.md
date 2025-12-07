@@ -1,3 +1,4 @@
+```c
 #ifndef CLAWR_STDLIB_H
 #define CLAWR_STDLIB_H
 
@@ -104,3 +105,4 @@ static inline bitfield leftShift(bitfield const self, integer const steps) {
 }
 
 #endif /* CLAWR_STDLIB_H */
+```
