@@ -1,4 +1,4 @@
-# Understanding `let`, `mut`, and `ref`: A Mental Model
+# Understanding `let`, `mut`, and `ref`: a Mental Model
 
 ## The Common Misconception
 
@@ -18,49 +18,76 @@ This mental model works for those languages because it reflects their implementa
 
 Think of variables not as pointers, but as three distinct kinds of things:
 
-### `let` variable: An Immutable Value
-
-A `let` variable holds a value that cannot change. Even if the value is structurally complex (a large data structure), the variable itself is locked to that value. Think of it as a sealed box—you can look inside, but you cannot modify the contents.
-
-### `mut` variable: An Independent Container
-
-A `mut` variable is like a drawer that holds data. You can open the drawer and change what's inside. Critically: **each drawer is its own distinct container**. You can copy the contents from one drawer to another, but you can never make two drawers "become the same drawer." Changes to one drawer never affect another drawer—they are physically and logically separate.
-
 ### `ref` variable: A Shared Reference
 
-A `ref` variable is like a hand that points to and can manipulate an entity. Multiple hands can grab hold of the same entity. When any hand manipulates it, all hands see the change because they're all interacting with the same thing. This is controlled, intentional sharing.
+A `ref` variable *is* a pointer. Or you can think of it as a hand. It is a *reference* to some entity somewhere in the system. The hand might grab onto an entity, manipulate it or use it for a while, and then let go of it. Or it might hold on to one entity forever.
+
+Multiple hands can reach for the same entity. When any hand manipulates it, all hands are affected by the change because they're all interacting with the same thing. This is shared mutable state. And it might be how many programmers think of object-oriented programming.
+
+The `ref` keyword is analogous to `class` types in other languages (e.g. Java, C#, Swift…). It indicates reference semantics.
+
+### `mut` variable: A Data Container
+
+A `mut` variable is like a drawer or a box of data. You can reach inside the drawer and change things around. You can copy the contents of one drawer into another. But you can never make two drawers “become the same drawer.” **Each drawer is its own distinct container**. This means that two variables can never change one another’s content. Changes made to one container can never be reflected in any other’s.
+
+Critically: declaring a `mut`variable guarantees that its state/data can never change unless the variable itself is explicitly mentioned as the target of mutation.
+
+The `mut` keyword is analogous to `struct` in languages where the type defines the semantics.
+
+### `let` variable: A Named Value or a Definition
+
+A `let` variable is essentially an assigned name for a particular value—what we might call a “*constant*.” The value can be a number (like $π$ or the integer 6) or a more complex structure (like GPS coordinates or the current configuration of your program). We could also say that we *define* the constant when we assign a value to it. Once defined, the constant is fixed.
+
+A value cannot change and still remain the same value. Similarly, a `let` variable is immutable and can only refer to its initial contents. Even if the named value is a large data structure—with arbitrarily many layers of nested structures—the variable itself is locked to the initial combination of field values. Even the tiniest change to that structure would construct a new value and the variable could not refer to that and still be considered constant.
+
+The `let` keyword is analogous to `let` variables with `struct` types in Swift. The runtime implementation of `let` can be exactly the same as for `mut`; the difference is at compile-time, where the compiler disallows any action other than reads.
+
+This is why `let` and `mut` variables can be freely assigned to each other. The copy operation is implicit in their identical isolation guarantees.
 
 ## The Key Insight: Assignment Semantics
 
 The mental model clarifies what happens during assignment:
 
-**`mut` → `mut` assignment: Copy**
+**`let` → `mut` assignment: Copy value**
 ```
-mut x = SomeData { value: 42 }
+let x: SomeData = { value: 42 }
 mut y = x
+y.value = 99 // Does not change x
 ```
 This copies the contents of `x` into `y`. They are now two independent drawers with identical contents. Changing `y` does not affect `x`.
 
-**`ref` → `ref` assignment: Share**
+**`ref` → `ref` assignment: Share entity**
 ```
-ref x = SomeEntity()
+ref x: SomeData = { value: 42 }
 ref y = x
+y.value = 99 // Also changes x
 ```
 Both `x` and `y` now reference the same entity. Changes through either reference affect the same underlying entity.
 
-**`mut` → `ref` assignment: Not Shared**
-```
-mut x = SomeData { value: 42 }
-ref y = ??? // What does this mean?
+**`mut` → `ref` assignment: Not Allowed**
+
+```clawr
+mut x: SomeData = { value: 42 }
+ref y = x // What would this mean?
+y.value = 99 // What does this do?
 ```
 
-This is where the misconception emerges. In traditional OOP, you might expect `y` to "reference" `x`, creating shared mutable state. But that would break `mut`'s guarantee of isolation.
+This is where the misconception emerges. In traditional OOP, you might expect `y` to “reference” `x`, creating shared mutable state. But that would break `mut`’s guarantee of isolation.
 
 Instead, one of two things must happen:
+
 1. The operation is **disallowed** (compile error)
-2. A new independent entity is created from `x`'s contents, and `y` references that new entity
+2. A new independent entity is created from `x`’s contents, and `y` references that new entity
 
 Either way, `x` remains isolated. Modifications through `y` cannot affect `x`.
+
+Clawr will indeed disallow direct assignment across semantic borders. And implicitly copying the value can lead to confusion. Therefore the value must be explicitly copied.
+
+```clawr
+mut x: SomeData = { value: 42 }
+ref y = copy x // Explicitly create a copy
+y.value = 99 // Does not change x
+```
 
 ## Why This Matters for Domain Logic
 
@@ -82,13 +109,26 @@ Languages like C# formalized this distinction: `struct` types are stack-allocate
 
 But implementation details make poor mental models. The stack/heap distinction is about *how* the machine works, not *why* your program behaves the way it does.
 
+## Advanced: Mixing Semantics
+
+I said before that `let` and `mut` variables cannot be manipulated by other references. This is true as long as the fields of your data structures are not `ref`. The recommendation is to make all fields `let` or `mut` to avoid this scenario, but that is not always feasible.
+
+Just like a `struct` in languages like C# and Swift can contain fields that refer to `class` types, Clawr types can contain `ref` fields (and still be assigned to `let` or `mut` variables). Mixing semantics complicates the metaphor.
+
+When dealing with `mut` variables, a `ref` field becomes like a hand inside a drawer. That mental image may be somewhat disturbing; in this case it might be better to think of it as a web-link. It can still refer to an entity shared with other variables. That shared entity is not inside the drawer; only the link is. Therefore, it might still be manipulated in unexpected ways from the `mut` variable’s perspective.
+
+> [!tip]
+> Prefer `mut` and `let` fields when possible. Fields without explicit semantics default to `mut`.
+> 
+> Neither `mut` nor `let` fields in a `ref` variable can ever cause a problem. The issue only occurs in one direction.
+
 ## The Value of Clear Semantics
 
 The `let`/`mut`/`ref` model separates concerns:
 
 - `let`: "This value never changes"
-- `mut`: "I own this container exclusively"  
-- `ref`: "This entity may be shared"
+- `mut`: "This is my container that only I can manipulate"  
+- `ref`: "This is a reference to an entity that resides elsewhere and may be shared by others"
 
 These guarantees let you encode domain logic directly. You're not building solutions around memory management—you're expressing the actual rules of your problem domain. When you see `mut` in your code, you know isolation. When you see `ref`, you know sharing. When you see `let`, you know immutability.
 
