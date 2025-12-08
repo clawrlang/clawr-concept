@@ -8,7 +8,7 @@ Every language needs primitive types. Here is the proposed set for Clawr:
 - `real`: a 64 bit IEEE 754 double-precision floating-point value
 - `decimal` an IEEE 754 `decimal64` base-10 floating-point value.
 - `boolean`: a value of `true` or `false`
-- `ternary`: an truth-value with three states (false, unknown and true)
+- `ternary`: an truth-value with three states (negative, unknown and positive)
 - `character`: this could be simple as in C or more complex as in Swift
 - `string`: a fixed list or sequence of characters
 - `regex`: a regular expression/pattern for string matching
@@ -32,11 +32,11 @@ Numbers are just numbers. Their representation uses balanced ternary instead of 
 A `ternary` can replace a `boolean` in `if` statements and `while` loops. The `up` value counts as `true` and the `down` value as `false`. The `else` branch will be executed for two states.
 
 ```clawr
-if ternaryValue { print("Value is up/true") }
-else { print("Value is either false/down or unknown/zero")}
+if ternaryValue { print("Value is positive/true") }
+else { print("Value is either false/negative or unknown/zero")}
 
-if !ternaryValue { print("Value is down/false") }
-else { print("Value is either true/up or unknown/zero")}
+if !ternaryValue { print("Value is negative/false") }
+else { print("Value is either true/positive or unknown/zero")}
 ```
 
 ## Sized Types?
