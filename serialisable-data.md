@@ -43,7 +43,7 @@ data Point {
 
 ## Complications
 
-A `data` with `ref` fields is cannot be implicitly serialisable as `ref` fields might generate referential cycles. If it is possible to prove the absence of cycles through static analysis, they *might* be allowed. But if cycles might be possible, serialisation cannot be generalised.
+A `data` with `ref` fields cannot be implicitly serialisable as `ref` fields might generate referential cycles. If it is possible to prove the absence of cycles through static analysis, they *might* be allowed. But if cycles might be possible, serialisation cannot be generalised.
 
 If it *is* possible to detect cycles, they should perhaps cause compilation errors. To break the cycle, make some references `weak` (i.e. not reference-counted). This is a good feature for combatting memory leaks as well.
 

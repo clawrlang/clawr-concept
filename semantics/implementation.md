@@ -240,7 +240,7 @@ DataType o--> __clawr_rc_header
 __clawr_rc_header --> __clawr_weak_island
 ```
 
-When the first `weak` reference is established, the `WeakReferece` structure is created with a reference-counter of 1, and the main object is updated to reference it. (The main object might be counted as well, but it is not necessary. If it is, the reference-counter should start at 2.)
+When the first `weak` reference is established, the `__clawr_weak_island` structure is created with a reference-counter of 1, and the main object is updated to reference it. (The main object might be counted as well, but it is not necessary. If it is, the reference-counter should start at 2.)
 
 When subsequent `weak` references are established, the reference-counter is incremented, and when they are reassigned or descoped, the counter is decremented. The structure is however not necessarily deallocated when the counter reaches zero. Instead it is deallocated with the main object.
 
