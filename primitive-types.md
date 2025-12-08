@@ -1,27 +1,35 @@
 # Primitive Types
 
 ![RAWR|150](../images/rawr.png)
-Every language needs primitive types. Here is the proposed set for Clawr:
+Every language needs primitive types. Here is a proposed set for Clawr:
 
-- `integer`: a 64 bit signed integer.
-- `bitfield`: a 64 bit register of bits/flags.
-- `real`: a 64 bit IEEE 754 double-precision floating-point value
-- `decimal` an IEEE 754 `decimal64` base-10 floating-point value.
+- `integer`: an arbitrarily sized integer value.
+- `real`: a floating-point value of unspecified precision.
+- `decimal` a base-10 floating-point value of unspecified precision.
 - `boolean`: a value of `true` or `false`
 - `ternary`: an truth-value with three states (negative, unknown and positive)
+- `bitfield`: a field of multiple Boolean bits/flags.
+- `tritfield`: a field of ternary trits/flags.
 - `character`: this could be simple as in C or more complex as in Swift
 - `string`: a fixed list or sequence of characters
 - `regex`: a regular expression/pattern for string matching
 
 ## Ternary Mode
 
-When compiling for ternary architecture, an `integer` is a large register of base-3 digits (a.k.a. trits). 54 trits should be sufficient to provide numbers far outranging 64 bits, but 81 might be more architecture-consistent.
+Clawr should support ternary architectures whenever they become mainstream. It is reasonable to expect that balanced ternary could take over the baton from binary in the future. In practical terms this is probably a very distant future as there is so much existing infrastructure that will need to be replaced, but being prepared is never a mistake. And actually being able to utilise ternary—albeit on a small scale—in the near future could spell competitive advantage.
 
-A `bitfield` (or “tritfield” in ternary mode?) is used differently. The number of positions is of higher relevance than the number of values per position, so limiting to 54 trits might be insufficient.
+A 64 bit `integer`could be translated to a 54 trit ternary without loss (as $3^{54} \gg 2^{64}$). For numeric values, the width of a register is not all that important; it is the range of representable values that matters. A similar case can be made for floating-point numbers.
 
-There is a proposed standard called ternary27. It is based on IEEE 754 and might be a good fit for `real` types in ternary mode. It does however only use 27 trits and we would need at least a “double precision” variant (54 trits) to compare to 64 bits IEEE 754. That is not covered by the documentation I found.
+There is a proposed standard called [ternary27](./unsorted/logic/ternary-architecture/Ternary27%20Standard.pdf). It is based on IEEE 754, but adapted to ternary, and might be a good fit for `real` types on ternary hardware. It does however only use 27 trits and does not have the range nor precision of 64 bit binary. To match IEEE 754 “double precision” we will need 54 trits. That is not covered by the documentation I found, but its model can probably be extended.
 
-The `ternary` type needs only one trit in ternary mode, but two bits in binary.
+A `bitfield` (or “`tritfield`” in ternary mode) is used differently. The number of positions is of higher relevance than the total number of combinations, so the focus should be on the number of bits/trits available.
+
+The `ternary` type needs only one trit in ternary mode, but would need two bits in binary. It is probably best to not support ternary `tritfields` on binary hardware.
+
+The `character` type (and by extension `string`) is probably less forward compatible. I suppose ASCII and ISO 8859-1 could be represented by converting the numeric value from base 2 to base 3. But UTF-8 will be a bit more awkward.
+
+> [!note]
+> It is not necessary to make a final decision regarding a ternary runtime before starting implementation work on Clawr. It is, however, good to have a rough plan regarding how ternary fits with the syntax and semantics.
 
 ### Compatibility
 
@@ -39,20 +47,25 @@ if !ternaryValue { print("Value is negative/false") }
 else { print("Value is either true/positive or unknown/zero")}
 ```
 
-## Sized Types?
+## Arbitrary Precision
 
-I do not believe we will need different-sized integer or floating-point numbers. This may be relevant when bridging to/from other language domains, but modern processors are 64 bits and there is no point in modelling for smaller registers. (Unless we want to copy Ada and put multiple small integers or booleans in [a single 64-bit structure](./bitstruct.md).)
+### Integers
 
-On the other hand [IEEE-745](https://en.wikipedia.org/wiki/IEEE_754) defines floating-point numbers up to “octuple precision” (256 bits, which translates to 32 bytes or 4 64-bit registers), so maybe multiple-register values can still be called for. (That would imply a need for `integer` types up to the same size as well. And maybe even an arbitrarily large `integer` type too?)
+Clawr uses arbitrarily-sized integers by default, eliminating overflow errors and removing the need for separate int8, int16, int32, int64 types. The compiler optimises storage based on proven value ranges or explicit annotations:
 
-### Arbitrarily Sized Integers
+```clawr
+count: integer  // Grows as needed
+age: integer @range(0..150)  // Compiler uses appropriate fixed size
+```
 
-Instead of limiting integers to 64 bits (or 54 trits) we could use an arbitrarily sized `integer` by default.
+### Floating-Point
 
-We could take inspiration from Ada, and use [annotations](./ada-inspirations.md) to limit the range of values, which could lead implicitly to a fixed memory size.
+The `real` type supports specific precisions (single, double, quadruple, octuple) following IEEE 754, with double precision as the default. For applications requiring arbitrary decimal precision, use the `decimal` type instead.
 
-## Integers are not Bit Vectors
+In ternary mode, `real` precisions are mapped to balanced ternary floating-point representations that meet or exceed the corresponding IEEE 754 binary precision. For example, a `real` with double precision uses 54 trits in ternary mode, providing greater range and precision than 64-bit IEEE 754.
 
-I do believe it would be good to conceptually separate bitfields from integers. Variables that are used for bitwise operations should probably not be used in arithmetic operations or compared to numbers that are the result of such. A `bitfield` cannot be assigned an integer (decimal) value, but a binary or hex literal (or the [ternary equivalent](./logic/ternary/t-hex.md) when applicable) does make sense.[^hex-vice-versa] Conversions between types should be allowed though; in this case that would mean a direct copy of the register.
+## Integers are not Bitfields
+
+I do believe it would be good to conceptually separate `bitfield` from `integer`. Variables that are used for bitwise operations should probably not be used in arithmetic operations or compared to numbers that are the result of such. A `bitfield` cannot be assigned an integer (decimal) value, but a binary or hex literal (or the [ternary equivalent](./logic/ternary/t-hex.md) when applicable) does make sense.[^hex-vice-versa] Conversions between types should be allowed though; in this case that would mean a direct copy of the register.
 
   [^hex-vice-versa]: Vice versa might also apply, but it's not an obvious truth; on the one hand binary and hex are almost exclusively used for specifying bits, never for specifying numbers; on the other hand they are just numeric bases and just as valid as decimal. Maybe we should restrict use at first and later lift that restriction if there are complaints?
