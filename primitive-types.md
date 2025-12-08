@@ -58,11 +58,13 @@ count: integer  // Grows as needed
 age: integer @range(0..150)  // Compiler uses appropriate fixed size
 ```
 
+If the value is known to fit in 64 bits or less (or 256 bits or less?) the compiler can output optimised code for that datatype instead of the slower arbitrary-size implementation.
+
 ### Floating-Point
 
 The `real` type supports specific precisions (single, double, quadruple, octuple) following IEEE 754, with double precision as the default. For applications requiring arbitrary decimal precision, use the `decimal` type instead.
 
-In ternary mode, `real` precisions are mapped to balanced ternary floating-point representations that meet or exceed the corresponding IEEE 754 binary precision. For example, a `real` with double precision uses 54 trits in ternary mode, providing greater range and precision than 64-bit IEEE 754.
+In ternary mode, `real` precisions are mapped to balanced ternary floating-point representations that meet or exceed the corresponding IEEE 754 binary precision. For example, a `real` with 54 trits can provide greater range and precision than the 64 bit double precision of IEEE 754.
 
 ## Integers are not Bitfields
 
