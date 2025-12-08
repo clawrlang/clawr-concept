@@ -20,7 +20,7 @@ Clawr should support ternary architectures whenever they become mainstream. It i
 
 A 64 bit `integer`could be translated to a 54 trit ternary without loss (as $3^{54} \gg 2^{64}$). For numeric values, the width of a register is not all that important; it is the range of representable values that matters. A similar case can be made for floating-point numbers.
 
-There is a proposed standard called [ternary27](./unsorted/logic/ternary-architecture/Ternary27%20Standard.pdf). It is based on IEEE 754, but adapted to ternary, and might be a good fit for `real` types on ternary hardware. It does however only use 27 trits and does not have the range nor precision of 64 bit binary. To match IEEE 754 “double precision” we will need 54 trits. That is not covered by the documentation I found, but its model can probably be extended.
+There is a proposed standard called [ternary27](https://cdn.hackaday.io/files/1649077055381088/Ternary27%20Standard.pdf). It is based on IEEE 754, but adapted to ternary, and might be a good fit for `real` types on ternary hardware. It does however only use 27 trits and does not have the range nor precision of 64 bit binary. To match IEEE 754 “double precision” we will need 54 trits. That is not covered by the documentation I found, but its model can probably be extended.
 
 A `bitfield` (or “`tritfield`” in ternary mode) is used differently. The number of positions is of higher relevance than the total number of combinations, so the focus should be on the number of bits/trits available.
 
