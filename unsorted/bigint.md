@@ -411,5 +411,129 @@ int main(void) {
     bigint_free(&x); bigint_free(&y); bigint_free(&z);
 
     return 0;
-}
+
+/* ------------------------------------------------------------
+   bigint_div: Full multi-limb long division (Knuth Algorithm D)
+   Computes:
+       q = a / b
+       r = a % b
+   Assumptions:
+       - a, b distinct from q, r
+       - b != 0
+   ------------------------------------------------------------ */
+
+static void bigint_div(BigInt *q, BigInt *r, const BigInt *a, const BigInt *b) {
+    /* Zero or small cases */
+    if (b->len == 0) {
+        fprintf(stderr, "Division by zero\n");
+        exit(1);
+    }
+    if (a->len == 0) {
+        bigint_init(q);
+        bigint_init(r);
+        return;
+    }
+
+    /* Compare |a| and |b| */
+    int cmp = bigint_cmp_abs(a, b);
+
+    if (cmp < 0) {
+        /* q = 0, r = a */
+        bigint_init(q);
+        bigint_copy(r, a);
+        r->sign = a->sign;  /* keep sign */
+        return;
+    }
+    if (cmp == 0) {
+        /* q = ±1, r = 0 */
+        bigint_init(r);
+        bigint_init(q);
+        bigint_ensure_cap(q, 1);
+        q->limbs[0] = 1;
+        q->len = 1;
+        q->sign = a->sign * b->sign;
+        return;
+    }
+
+    /* Signs */
+    int sign_q = a->sign * b->sign;
+    int sign_r = a->sign;
+
+    /* Work with |a| and |b| */
+    BigInt A, B;
+    bigint_init(&A);
+    bigint_init(&B);
+    bigint_copy(&A, a);
+    bigint_copy(&B, b);
+    A.sign = B.sign = +1;
+
+    /* Normalization --------------------------------------------------
+       Multiply both A and B by d so that top limb of B ≥ 2^31.
+       This improves quotient digit estimation.
+    ------------------------------------------------------------------ */
+    uint32_t d = 0;
+    {
+        uint32_t btop = B.limbs[B.len - 1];
+        int shift = 0;
+        while (btop < 0x80000000u) {
+            btop <<= 1;
+            shift++;
+        }
+        d = shift;
+    }
+
+    if (d != 0) {
+        BigInt Atmp, Btmp;
+        /* left shift by d bits */
+        bigint_shl_bits(&Atmp, &A, d);
+        bigint_shl_bits(&Btmp, &B, d);
+        bigint_free(&A); A = Atmp;
+        bigint_free(&B); B = Btmp;
+    }
+
+    size_t n = A.len;
+    size_t m = B.len;
+
+    /* q length = n - m + 1 */
+    bigint_init(q);
+    bigint_ensure_cap(q, n - m + 1);
+    for (size_t i = 0; i < n - m + 1; ++i) q->limbs[i] = 0;
+    q->len = n - m + 1;
+    q->sign = sign_q;
+
+    /* Ensure A has extra space (unused limb at top) */
+    bigint_ensure_cap(&A, A.len + 1);
+    if (A.limbs[A.len - 1] == 0) {
+        /* good */
+    } else {
+        /* extend */
+        A.limbs[A.len] = 0;
+        A.len++;
+    }
+
+    uint64_t btop = B.limbs[m - 1];
+    uint64_t b2   = (m >= 2) ? B.limbs[m - 2] : 0;
+
+    /* Main loop: i = n - m down to 0 */
+    for (size_t ii = n - m + 1; ii-- > 0;) {
+        size_t i = ii;
+        /* Estimate quotient digit qhat = min((A[i+m]*base + A[i+m-1]) / B[m-1], base-1) */
+        uint64_t Ah  = ((uint64_t)A.limbs[i + m] << 32) | A.limbs[i + m - 1];
+        uint64_t qhat = Ah / btop;
+        uint64_t rhat = Ah % btop;
+
+        /* Refine estimate if necessary */
+        while (qhat == 0x100000000ULL || (qhat * b2 > ((rhat << 32) | (i + m >= 2 ? A.limbs[i + m - 2] : 0)))) {
+            qhat--;
+            rhat += btop;
+            if (rhat >= 0x100000000ULL) break;
+        }
+
+        /* Multiply B by qhat and subtract from A starting at limb i */
+        uint64_t borrow = 0;
+        for (size_t j = 0; j < m; ++j) {
+            uint64_t p = (uint64_t)B.limbs[j] * qhat;
+            uint64_t t = (uint64_t)A.limbs[i + j] - (p & 0xFFFFFFFFu) - borrow;
+            A.limbs[i + j] = (uint32_t)t;
+            bor
 ```
