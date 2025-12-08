@@ -83,7 +83,7 @@ data:
 ```
 
 > [!note]
-> This `BowlingGame` type is defined as an `object`, meaning it hides its data structure behind an encapsulation. This will be discussed in a [different document](object-data.md).
+> This `BowlingGame` type is defined as an `object`, meaning it hides its data structure behind an encapsulation. This will be discussed in a [different document](types/object-data.md).
 
 Now, when using `BowlingGame`, we can choose the appropriate semantics based on our needs:
 
@@ -211,4 +211,4 @@ Idea/exploration: What if parameters had their own semantics? They could be some
 
 There is a [proof of concept repository](https://github.com/clawrlang/clawr-poc) that implements a compiler and runtime for Clawr, demonstrating the variable scope and semantics model described above. Its main focus is showing how the runtime can manage memory with the proposed semantics while providing safety guarantees.
 
-It also implements the other big language idea of Clawr: enforcing [encapsulation vs pure data segregation](object-data.md).
+It also implements the other big language idea of Clawr: enforcing [encapsulation vs pure data segregation](types/object-data.md).

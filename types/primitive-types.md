@@ -68,6 +68,6 @@ In ternary mode, `real` precisions are mapped to balanced ternary floating-point
 
 ## Integers are not Bitfields
 
-I do believe it would be good to conceptually separate `bitfield` from `integer`. Variables that are used for bitwise operations should probably not be used in arithmetic operations or compared to numbers that are the result of such. A `bitfield` cannot be assigned an integer (decimal) value, but a binary or hex literal (or the [ternary equivalent](./logic/ternary/t-hex.md) when applicable) does make sense.[^hex-vice-versa] Conversions between types should be allowed though; in this case that would mean a direct copy of the register.
+I do believe it would be good to conceptually separate `bitfield` from `integer`. Variables that are used for bitwise operations should probably not be used in arithmetic operations or compared to numbers that are the result of such. A `bitfield` cannot be assigned an integer (decimal) value, but a binary or hex literal (or the [ternary equivalent](t-hex.md) when applicable) does make sense.[^hex-vice-versa] Conversions between types should be allowed though; in this case that would mean a direct copy of the register.
 
   [^hex-vice-versa]: Vice versa might also apply, but it's not an obvious truth; on the one hand binary and hex are almost exclusively used for specifying bits, never for specifying numbers; on the other hand they are just numeric bases and just as valid as decimal. Maybe we should restrict use at first and later lift that restriction if there are complaints?

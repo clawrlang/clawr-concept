@@ -42,7 +42,7 @@ A roaring lion may not be as obvious as a screeching monkey, but it might be mor
 Here are some of the big ideas that Clawr is exploring:
 
 - [Variable Scope and Semantics](variable-scope.md): Enforcing clear variable semantics to avoid unintended shared state and side effects.
-- [Object vs Data Segregation](./object-data.md): Enforcing encapsulation for objects in business applications, while allowing pure, exposed data structures for big-data analysis.
+- [Object vs Data Segregation](types/object-data.md): Enforcing encapsulation for objects in business applications, while allowing pure, exposed data structures for big-data analysis.
 
 ## Get Started
 
