@@ -3,6 +3,11 @@
 > [!note] Programmer Documentation
 > This is a sketch of the Clawr documentation. The repository in general targets linguists and compiler designers. This section envisions how future Clawr programmers might be introduced to the language.
 
+> [!note] Obsidian Notation
+> This paragraph is a *callout*. It is written using [Obsidian notation](https://help.obsidian.md/callouts) and looks best when read in the Obsidian editor. Unfortunately there is no standard for callouts—sometimes similar notations coincide and sometimes not.
+>
+> Obsidian is “[free without limits](https://obsidian.md/pricing)” so I can with good conscience ask you to [download and install it](https://obsidian.md/download) if you are interested in contributing to this documentation.
+
 ---
 
 # Clawr: Coding with Roaring Clarity
