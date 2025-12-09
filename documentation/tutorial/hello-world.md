@@ -1,6 +1,6 @@
 # Getting Started with Clawr-lang
 
-![Clawr|150](../images/rawr.png)
+![Clawr|150](rawr.png)
 
 Clawr is a new, intuitive programming language designed to help you solve problems efficiently, whether you're building small scripts, exploring data, or designing complex systems. This introduction will guide you through the **core features** of Clawr, starting with the basics of programming and then escalating to advanced modelling and intentful programming.
 
@@ -8,22 +8,20 @@ Whether you are an absolute beginner or already have experience with programming
 
 ## The Basics: "Hello, World!"
 
-Let’s introduce the language in the time-honoured way of saying ”hello” to the world. [^1] In Clawr, that program looks like this:
+Let’s introduce the language with the time-honoured tradition of saying ”hello” to the world. [^1] In Clawr, that program looks like this:
 
 [^1]: The “Hello World” program is an ancient tradition. It has been used as a first introduction to practically every programming language in history. It is not a tradition we need to end here. https://en.wikipedia.org/wiki/%22Hello%2C_World!%22_program
 
-
-> [!example] Hello, World from Clawr
-> ```clawr
-> print("Hello, World!")
-> ```
+```clawr
+print("Hello, World!")
+```
 
 > [!info] How it Works
 > This simple line of code demonstrates a *function call*. We call the `print(_:)` function, a function with a single `string` *parameter*. A `string` is simply a sequence of characters to represent continuous text. When `print(_:)` is called, it outputs that text in the terminal where the program is running.
 >
-> The `(_:)` part of the name indicates that it has one unlabelled parameter. Unlike traditional languages, Clawr uses parameter labels. A function like `func goToX(_ x:, y:)` uses the *base name* `goToX` and a label (`y:`) to clarify which parameter has which role.   A function with no parameters is written with nothing between the parentheses: `()`.
+> The `(_:)` part of the name indicates that it has one unlabelled parameter. Unlike traditional languages, Clawr uses parameter labels. A function like `func goToX(_ x:, y:)` uses the *base name* `goToX` and a label (`y:`) to clarify which parameter has which role.   A call to a function with no parameters is written with nothing between the parentheses: `takeAction()`.
 
-Here, we call the function with a single *argument*, the `string` value `"Hello, World!"`. We say that a function has (or takes or accepts) “parameters,” but when we call the function we say that we pass “arguments” to it. The arguments must match the parameters exactly, or we will see an error message from the compiler.
+Here, we call the `print(_:)` function with a single *argument*, the `string` value `"Hello, World!"`. We say that a function has (or takes or accepts) “parameters,” but when we call the function we say that we pass “arguments” to it. The arguments must match the parameters exactly, or we will see an error message from the compiler.
 
 The compiler (`rwrc`—pronounced “roar cee,” or just “roar” with the c silent) is the tool that parses your code and generates a “binary” that you can then run at any time. You can compile and run the program in a single step by typing the equivalent of `rwrc hello.cwr && ./hello` in your terminal (you can replace “hello” with a filename of your choice). Running the “Hello, World” program would look like this:
 
@@ -84,7 +82,7 @@ Hello, World!
 
 But programs are not useful unless they can make decisions and computations. Before we can start making decisions, however, we will need an automated process. This is the `for` loop:
 
-> [!example] `if` statement
+> [!example] `for in` loop
 > ```clawr
 > // This is a list of elements.
 > // Lists can be indexed and enumerated.

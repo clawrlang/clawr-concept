@@ -46,7 +46,7 @@ Here are some of the big ideas that Clawr is exploring:
 
 ## Get Started
 
-Let's start with something simple — [your first Clawr program](./unsorted/clawr-old/tutorial/hello-world.md).
+Let's start with something simple — [your first Clawr program](./documentation/tutorial/hello-world.md).
 
 There is a [proof of concept repository](https://github.com/clawrlang/clawr-poc) that implements a compiler and runtime for Clawr, demonstrating the variable scope and semantics model described above.
 
