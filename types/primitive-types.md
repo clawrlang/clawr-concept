@@ -5,14 +5,18 @@ Every language needs primitive types. Here is a proposed set for Clawr:
 
 - `integer`: an arbitrarily sized integer value.
 - `real`: a floating-point value of unspecified precision.
-- `decimal` a base-10 floating-point value of unspecified precision.
+- `decimal`: a base-10 floating-point value of unspecified precision.
 - `boolean`: a value of `true` or `false`
-- `ternary`: an truth-value with three states (negative, unknown and positive)
-- `bitfield`: a field of multiple Boolean bits/flags.
-- `tritfield`: a field of ternary trits/flags.
+- `ternary`: an truth-value with three states (`negative`, `unset` and `positive`)
 - `character`: this could be simple as in C or more complex as in Swift
 - `string`: a fixed list or sequence of characters
 - `regex`: a regular expression/pattern for string matching
+- `error`: a type for indicating issues at runtime
+- *lambda*: a callable function with a specific signature
+- *tuple*: a list of values of varying (but specific) types
+- *array*: ordered collection with fixed size (`[T]` / `Array<T>`)
+
+These are foundational types that can be aggregated into `data` structures and other [user-defined types](./user-types.md).
 
 ## Ternary Mode
 
@@ -21,10 +25,6 @@ Clawr should support ternary architectures whenever they become mainstream. It i
 A 64 bit `integer`could be translated to a 54 trit ternary without loss (as $3^{54} \gg 2^{64}$). For numeric values, the width of a register is not all that important; it is the range of representable values that matters. A similar case can be made for floating-point numbers.
 
 There is a proposed standard called [ternary27](https://cdn.hackaday.io/files/1649077055381088/Ternary27%20Standard.pdf). It is based on IEEE 754, but adapted to ternary, and might be a good fit for `real` types on ternary hardware. It does however only use 27 trits and does not have the range nor precision of 64 bit binary. To match IEEE 754 “double precision” we will need 54 trits. That is not covered by the documentation I found, but its model can probably be extended.
-
-A `bitfield` (or “`tritfield`” in ternary mode) is used differently. The number of positions is of higher relevance than the total number of combinations, so the focus should be on the number of bits/trits available.
-
-The `ternary` type needs only one trit in ternary mode, but would need two bits in binary. It is probably best to not support ternary `tritfields` on binary hardware.
 
 The `character` type (and by extension `string`) is probably less forward compatible. I suppose ASCII and ISO 8859-1 could be represented by converting the numeric value from base 2 to base 3. But UTF-8 will be a bit more awkward.
 
@@ -65,9 +65,3 @@ If the value is known to fit in 64 bits or less (or 256 bits or less?) the compi
 The `real` type supports specific precisions (single, double, quadruple, octuple) following IEEE 754, with double precision as the default. For applications requiring arbitrary decimal precision, use the `decimal` type instead.
 
 In ternary mode, `real` precisions are mapped to balanced ternary floating-point representations that meet or exceed the corresponding IEEE 754 binary precision. For example, a `real` with 54 trits can provide greater range and precision than the 64 bit double precision of IEEE 754.
-
-## Integers are not Bitfields
-
-I do believe it would be good to conceptually separate `bitfield` from `integer`. Variables that are used for bitwise operations should probably not be used in arithmetic operations or compared to numbers that are the result of such. A `bitfield` cannot be assigned an integer (decimal) value, but a binary or hex literal (or the [ternary equivalent](t-hex.md) when applicable) does make sense.[^hex-vice-versa] Conversions between types should be allowed though; in this case that would mean a direct copy of the register.
-
-  [^hex-vice-versa]: Vice versa might also apply, but it's not an obvious truth; on the one hand binary and hex are almost exclusively used for specifying bits, never for specifying numbers; on the other hand they are just numeric bases and just as valid as decimal. Maybe we should restrict use at first and later lift that restriction if there are complaints?
