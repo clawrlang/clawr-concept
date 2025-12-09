@@ -535,5 +535,76 @@ static void bigint_div(BigInt *q, BigInt *r, const BigInt *a, const BigInt *b) {
             uint64_t p = (uint64_t)B.limbs[j] * qhat;
             uint64_t t = (uint64_t)A.limbs[i + j] - (p & 0xFFFFFFFFu) - borrow;
             A.limbs[i + j] = (uint32_t)t;
-            bor
+            borrow = (p >> 32) + ((t >> 63) & 1);  /* t<0 means borrow */
+        }
+
+        /* subtract final borrow from A[i+m] */
+        uint64_t t2 = (uint64_t)A.limbs[i + m] - borrow;
+        A.limbs[i + m] = (uint32_t)t2;
+
+        /* If negative, correct by adding B back */
+        if (t2 >> 63) {
+            qhat--;
+            uint64_t carry = 0;
+            for (size_t j = 0; j < m; ++j) {
+                uint64_t t = (uint64_t)A.limbs[i + j] + B.limbs[j] + carry;
+                A.limbs[i + j] = (uint32_t)t;
+                carry = t >> 32;
+            }
+            A.limbs[i + m] += (uint32_t)carry;
+        }
+
+        q->limbs[i] = (uint32_t)qhat;
+    }
+
+    bigint_normalize(q);
+
+    /* Compute remainder: R = A >> d (undo normalization) */
+    if (r != NULL) {
+        if (d != 0) {
+            BigInt tmp;
+            bigint_shr_bits(&tmp, &A, d);  /* need implement shift-right bits */
+            bigint_copy(r, &tmp);
+            bigint_free(&tmp);
+        } else {
+            bigint_copy(r, &A);
+        }
+        r->sign = sign_r;
+    }
+
+    bigint_normalize(r);
+
+    /* Cleanup */
+    bigint_free(&A);
+    bigint_free(&B);
+}
+
+/* Right shift by bits (< 32*limbs) */
+static void bigint_shr_bits(BigInt *dest, const BigInt *a, unsigned bits) {
+    if (a->len == 0) { bigint_init(dest); return; }
+
+    unsigned word_shift = bits / 32;
+    unsigned bit_shift  = bits % 32;
+
+    if (word_shift >= a->len) {
+        bigint_init(dest);
+        return;
+    }
+
+    bigint_init(dest);
+    bigint_ensure_cap(dest, a->len - word_shift);
+
+    uint64_t carry = 0;
+    for (size_t i = a->len; i-- > word_shift;) {
+        uint64_t cur = ((uint64_t)a->limbs[i] << (32 - bit_shift)) & 0xFFFFFFFFULL;
+        uint64_t out = ((uint64_t)a->limbs[i] >> bit_shift) | carry;
+        carry = bit_shift ? cur : 0;
+
+        dest->limbs[i - word_shift] = (uint32_t)out;
+    }
+
+    dest->len = a->len - word_shift;
+    dest->sign = a->sign;
+    bigint_normalize(dest);
+}
 ```
