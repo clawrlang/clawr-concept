@@ -54,7 +54,7 @@ Another common Boolean operator is XOR (depicted with $\oplus$ in mathematics). 
 > - `a XOR b` = `(NOT a AND b) OR (a AND NOT b)`
 > - `a XNOR b` = `NOT (a XOR b)`
 >
-> “Negate everything” formulas:
+> [De Morgan’s theorem](https://en.wikipedia.org/wiki/De_Morgan%27s_laws) (a.k.a “negate everything”):
 >
 > - `NOT (a OR b)` = `NOT a AND NOT b`
 > - `NOT (a AND b)` = `NOT a OR NOT b`
