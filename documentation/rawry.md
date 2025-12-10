@@ -1,5 +1,6 @@
-# The Clawr Lion
-![Clawr](../../images/rawr.png)
+# Rawry the Lion
+
+![Rawry](../images/rawry-big.png)
 Meet Rawrderick or “Rawry” for short.
 
 Rawry is angry. He is angry at code that focuses too much on implementation and technicalities and distracts from understanding the application’s domain. He is angry at status seeking technologists writing “clever code” that only they themselves can understand.

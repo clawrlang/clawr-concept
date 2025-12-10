@@ -1,6 +1,6 @@
 # Complex structures in Clawr
 
-![Clawr|150](rawr.png)
+[![Rawry](../../images/rawry.png)](../rawry.md)
 
 Clawr is not like other languages. It focuses on modelling and intent rather than the technical ins and outs of a processor, registers and memory handling. One of the ways Clawr is different is how it thinks of types and variables.
 

@@ -1,6 +1,6 @@
 # Clawr: Coding with Roaring Clarity
 
-![Clawr's unnamed mascot–a roaring lion with an eye-patch](./images/clawr-lion.png)
+![Clawr's unnamed mascot–a roaring lion with an eye-patch](rawry.png)
 
 This repository exists to collect ideas and concepts for Clawr, a programming language designed to help you express your ideas clearly so others (and your future self) can understand them.
 

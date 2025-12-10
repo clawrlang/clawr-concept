@@ -12,7 +12,7 @@
 
 # Clawr: Coding with Roaring Clarity
 
-![Clawr's unnamed mascot–a roaring lion with an eye-patch](../images/clawr-lion.png)
+[![Rawry](../images/rawry.png)](./rawry.md)
 
 Clawr is a programming language designed to help you express your domain knowledge clearly so others (and your future self) can understand and learn them.
 
