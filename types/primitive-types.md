@@ -1,6 +1,6 @@
 # Primitive Types
 
-![RAWR|150](../images/rawr.png)
+![RAWR|150](../images/rawry.png)
 Every language needs primitive types. Here is a proposed set for Clawr:
 
 - `integer`: an arbitrarily sized integer value.
