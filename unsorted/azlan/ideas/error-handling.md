@@ -2,7 +2,7 @@
 
 Should we support checked exceptions like Java and Swift? Maybe not: checked exceptions cause a lot of noise in the code. Even C# exception-handling distract a lot from the main algoritm. Maybe we can invent a brand new approach?
 
-Swift requires every throwing method to announce their incom. Java allows unchecked exceptions (through the `RuntimeException` type). And C# does not even have checked exceptions.
+Swift requires every throwing method (`throws`) to announce that they are incomplete. Java allows unchecked exceptions (through the `RuntimeException` type). And C# does not even have checked exceptions.
 
 I don't think we should emulate Swift in this case, but I'm unsure.
 

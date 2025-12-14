@@ -335,7 +335,10 @@ A `let` variable is essentially an assigned name for a particular value—what w
 
 A value cannot change and still remain the same value. Similarly, a `let` variable is immutable and can only refer to its initial contents. Even if the named value is a large data structure—with arbitrarily many layers of nested structures—the variable itself is locked to the initial combination of field values. Even the tiniest change to that structure would construct a new value and the variable could not refer to that and still be considered constant.
 
-The `let` keyword is analogous to `let` variables with `struct` types in Swift. The runtime implementation of `let` can be exactly the same as for `mut`; the difference is at compile-time, where the compiler disallows any action other than reads.
+The `let` keyword is analogous to `let` variables with `struct` types in Swift.
 
-This is why `let` and `mut` variables can be freely assigned to each other and share memory until mutation is performed. Assigning `ref` variables to `let` or `mut`, or vice versa, require explicit copying as the semantics are incompatible, but between `let` and `mut` the `copy` operation is implicit and only occurs if/when needed.
- 
+### Crossing the Boundary Requires Explicitly Copying
+
+`let` and `mut` variables make the same promise: that they will remain isolated from changes to any other variable (even if they share memory). The only difference is at compile-time, where the compiler disallows any mutating action to `let` variables. This is why `let` and `mut` variables can be freely assigned to each other. They both have copy-on-write semantics and their isolation is enforced implicitly.
+
+`ref` variables, however, have diametrically opposed semantics. They make the opposite promise—that all changes *should* be seen by all. Assigning `ref` variables to `let` or `mut`—or vice versa—is therefore forbidden unless an explicit `copy` operation is performed.
