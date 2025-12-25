@@ -42,7 +42,7 @@ mut b = a
 
 Conceptually, these are two separate structures that just happen to be identical.
 
-In memory, however, actually replicating structures is expensive, so as long as neither vriable is changed, they can reference the same memory address:
+In memory, however, actually replicating structures is expensive, so as long as neither variable is changed, they can reference the same memory address:
 
 ```mermaid
 flowchart
@@ -71,6 +71,8 @@ classDef shared  fill:#ffd6d6,stroke:#333,stroke-width:1px,color:black;
 class z_mem,cx_mem shared;
 ```
 
+> (The `Z` member is highlighted in red because it is defined as `ref`, which breaks the beauty of copy-on-write isolation.)
+
 Consider the following innocent-looking mutation:
 
 ```clawr
@@ -79,7 +81,7 @@ b.y.value = 1
 
 This seems simple enough: modify the `y` structure of `b`.  But Rawry grows suspicious. He looks at the runtime memory graph and asks:
 
-- Does `b` require isolation?
+- Does `b` or `b.y` require isolation?
 - Does anything else point at the same underlying data?
 - Will this mutation leak into another part of the program?
 

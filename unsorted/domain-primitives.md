@@ -26,7 +26,7 @@ Or, equivalently:
 ```clawr
 // Not types -- just aliases to reduce typing:
 typealias EntityIdConstraint = string @matching(/^a-z0-9$/g) @maxlength(256)
-typealias Versionrange = integer @range(0..2^32-1) // This fits in 32 bits
+typealias VersionRange = integer @range(0..2^32-1) // This fits in 32 bits
 
 // Types -- with type checking:
 domain EntityId = EntityIdConstraint
@@ -74,16 +74,16 @@ let y: string @matching(/^a-z0-9$/g) @maxlength(256) = x
 let x = 5
 ```
 
-The initial value (5) is of a highly constrained type (`integer @value(5)`). This is not a type you would typically assign a variable, but in this case the variable is defined as immutable (`let`) and can be implicitly typed. Therefore it *does* have that type.
+The initial value (5) is of a highly constrained type (`integer @value(5)`). This is not a type you would typically assign a variable, but in this case the variable is defined as immutable (`let`) and can be implicitly typed, constrained to only allow the value it actually has. Therefore it *will* have that type.
 
-Maybe this type-system (with implicit typing) can be used to afford Haskell-like optimisation too?
+Maybe this type-system (with implicit typing to a single value) can be used to afford Haskell-like optimisation too?
 
 ```clawr
 let x = 5 // integer @value(5)
 let y = x * 3 // integer @value(15)
 ```
 
-This could replace any reference to `x` with let numeric value 5 and any reference to `y` with the value 15.
+This could replace any reference to `x` with the numeric value 5 and any reference to `y` with the value 15. Inlined in the machine code! The variables themselves are then redundant and can be elided.
 
 ## Future Directions
 
