@@ -1,0 +1,334 @@
+# List Comprehensions and Generators
+
+Several languages use a syntax called a list comprehension. It allows safe filtering and conversion of lists. Clawr has its own flavour; you can choose between constructing the *cartesian product* of existing collections, or *zipping* ordered sequences together.
+
+## Cartesian Product
+
+The cartesian product of two lists is defined as every possible combination of taking one element from each list. For example, the cartesian product of `[1, 2, 3]` and `[4, 5]` is `[(1, 4), (1, 5), (2, 4), (2, 5), (3, 4), (3, 5)]`. When this is done, the output is often not just tuples/pairs; instead the components are fed into a function, f, yielding `[f(1, 4), f(1, 5), f(2, 4), f(2, 5), f(3, 4), f(3, 5)]` in the example case.
+
+In Clawr, we write the cartesian product like this:
+
+```clawr
+let xs = [1, 2, 3]
+let ys = [4, 5]
+
+let c_product = {
+  x + y // f
+: x <- xs,
+  y <- ys
+}.all()
+```
+
+The first line is the function (`f`) used to combine the paired collection members in the output. We could use `(x, y)` to simply return pairs, but in this example we add `x + y` to return the sequence `[1 + 4, 1 + 5, 2 + 4, 2 + 5, 3 + 4, 3 + 5]`.
+
+A list cartesian product is a generator. It does not automatically create a collection. Instead you have to explicitly state which items to collect. `Generator.all()` collects all yielded elements as an array.
+
+A generator's output can be infinite in size. As long as you only extract a finite number of elements, that is not a problem as they will not be kept in memory unless explicitly collected.
+
+```clawr
+let xs = [1, 2, 3]
+let ys = [4...] // 4, 5, 6, 7, 8, ... to infinity
+
+let collected = {
+  x + y // f
+: x <- xs, // iterated once
+  y <- ys  // iterated xs.count times
+}.take(15)
+```
+
+The output here is `[1 + 4, 1 + 5, 1 + 6, ..., 1 + 18]` or `[5, 6, 7, 8, 9, 19, 11, 12, 13, 14, 15, 16, 17, 18, 19]`. The `x <- xs` extraction is only iterated once through the collection, while `y <- ys` it iterated through once per `x` value. In this case, the second input is infinite. We will never get to `x` = 2 as we’d first have to pass through an infinite number of `y` values for `x` = 1.
+
+> [!note]
+> This replicates the way that nested loops work. The first loop is the outer loop and only iterated through once. Nested loops are progressively more frequent.
+
+Because one of the inputs is infinite, so is the output from the generator. If we called `all()` here, we would use up memory until the application crashed. `Generator.take()` limits the number of items to collect.
+
+## ZIP-Generators
+
+Sometimes we do not need the cartesian product. In that case the zip generator can be useful. The zip generator also allows stateful generation which the cartesian product does not.
+
+To distinguish a zip generator from a cartesian product, the syntax adds an angle-bracket (`>`) to the beginning:
+
+```clawr
+let xs = [1, 2, 3]
+let ys = [4...] // 4, 5, 6, 7, 8, ... to infinity
+
+let zip_generator = {>
+  x + y       // yielded element
+: x <- xs     // input collection
+  y <- ys
+: x < 12 && y > 32
+}.all()
+```
+
+The output will now be `[1 + 4, 2 + 5, 3 + 6]`, i.e. `[5, 7, 9]`.
+
+Instead of pairing all members multiplicatively, a zip generator pairs only the first in each list with each other, then the second in each list, etc. When either one of the list ends, the output ends too, even if the other input has more members to take from.
+
+The cartesian product is timeless. The goal is merely to generate all pairings; the order is not important (though well-defined). A zip generator is ordered, and the lists do not need to “exist,” but can be generated along the way:
+
+```clawr
+let zip_generator = {>
+   x + y            // yielded element
+:  x <- xs          // input collection
+:> y := 0 ~> 1 + :y // generated value
+:  x < 12 && y > 32
+}
+```
+
+In a `{>}` block, all `<-` inputs are zipped, not multiplied. Generators do not produce a cartesian product. Instead they zip the input lists together until one of them has reached its end.
+
+The syntax is similar to a cartesian-product list-comprehension, though it has some differences.
+
+- The starting brace is adorned to resemble a play-button (▶️—implying temporality; the `y` value is generated in a stateful and procedural manner, it is not declarative)
+- `|>` is meant to look like a play button even more strongly than `{>`, because this is where the procedural state originates
+- `:=` is an assignment operator. It can be repeated for consecutive “initial” values.
+- `~>` refers to a generator that will be used indefinitely to generate new values after the initial values run out.
+- `:strikes` refers to the value of `strikes` in the previous iteration (undefined in the first)
+
+### Example 1: the Fibonacci Sequence
+
+```clawr
+let fibonacci = {> f
+  |> f := 0 := 1 ~> :f + ::f
+}
+```
+
+This means that in the first iteration, `f` is $f_1 = 0$ and in the second iteration $f_2 = 1$. In the third, and subsequent iterations, `f` is calculated as $f_n = f_{n-1} + f_{n-2}$.
+
+The value $f_{n-2}$ (syntactically `::f`) is not defined and cannot be referenced until the third iteration, so there has to be two initial values defined for that to be available in the generator expression (after the `~>` symbol). Of course neither $f_{n-1}$ nor $f_{n-2}$ is defined in the first iteration, so referencing *either* of `:f` or `::f` in the yield expression cannot be allowed.
+
+### Example 2: the Geometric Sequence
+
+```clawr
+func geometric(ratio: real, start: real) -> Generator<real> {
+  return {> n |> n := start ~> :n * ratio }
+}
+```
+
+### Example 3: the Bowling Game Kata
+
+Robert “Uncle Bob” Martin published two katas on subsequent days in 2005: [the Bowling Game kata](http://www.butunclebob.com/ArticleS.UncleBob.TheBowlingGameKata) on June 23, and the [Prime Factors kata](http://www.butunclebob.com/ArticleS.UncleBob.ThePrimeFactorsKata) on June 24. His instructions were written in Java and resulted in imperative code. I have since made attempts at generating functional (referentially transparent) versions in other languages.
+
+Here is a solution to the Bowling Game kata in Clawr:
+
+```clawr
+pure func score() -> integer {
+
+  // Generator (identified by the angle-bracket meant to signal temporality--play button)
+  let frameIndices = {
+    > 2 * frame - strikes // This defines the yielded elements
+  
+    // The frame is taken from an infinite list of incrementing integers
+    | frame <- 0...
+
+    // Internal state machine (identified by multiple hints).
+    |> strikes := 0 ~> isStrikeAt(2 * frame - :strikes) ? :strikes + 1 : :strikes
+  }
+
+  // Comprehension (no angle bracket - no state-machine allowed)
+  return sum { frameScoreAt(i) | i <- frameIndices.take(10) }
+}
+```
+
+---
+
+| Syntax | Meaning                |
+| ------ | ---------------------- |
+| `{}`   | timeless comprehension |
+| `{>`   | temporal generator     |
+| `\|>`  | state introduction     |
+
+---
+
+> [!question] AI Prompt
+> Could the syntax be used to split a list in pairs? Like [1, 2, 3, 4] -> [(1, 2), (3, 4)]. (I suppose, it there was a fifth element it would be ignored unless there was also a sixth to pair it with.)
+>
+> Could it be used to pair the items as [(1, 2), (2, 3), (3, 4)]?
+
+Short answer: **yes to both**, and nicely so — _but they’re two different ideas_, and it’s good that they look a little different in syntax.
+
+Let’s separate them cleanly.
+
+---
+
+## 1. Pairing adjacent elements: `[(1,2),(3,4)]`
+
+This is **zipping with a stride of 2** (a non-overlapping window).
+
+Conceptually:
+
+- advance the input by two elements per step
+    
+- stop when a full pair can’t be formed
+    
+
+That fits your `{>}` model _very_ naturally.
+
+### One clean way to express it
+
+You already have state and time, so you can say:
+
+```clawr
+let pairs = {>
+  (a, b)
+| x <- xs
+|> a := take(x) ~> take(x)
+|> b := take(x) ~> take(x)
+}
+```
+
+But that’s a bit verbose.
+
+So it’s reasonable to introduce a **windowed binding** (purely sugar):
+
+```clawr
+let pairs = {>
+  (a, b)
+| (a, b) <- xs.by(2)
+}
+```
+
+Semantics:
+
+- consume 2 elements per tick
+    
+- yield 1 value per tick
+    
+- drop trailing elements if incomplete
+    
+
+This is _not_ cartesian, not declarative — it’s temporal consumption — so `{>}` is exactly right.
+
+---
+
+## 2. Overlapping pairs: `[(1,2),(2,3),(3,4)]`
+
+This is a **sliding window of size 2 with stride 1**.
+
+Again: temporal, ordered, stateful → `{>}` territory.
+
+### Expressed explicitly
+
+Using state:
+
+```clawr
+let slidingPairs = {>
+  (prev, x)
+| x <- xs
+|> prev := undefined ~> x
+}
+```
+
+Rules:
+
+- first iteration has no `prev` → no yield
+    
+- subsequent iterations yield `(prev, x)`
+    
+
+This matches your earlier decision:
+
+> `:x` is undefined on the first iteration
+
+Very consistent.
+
+### Or with window sugar
+
+If you allow window notation:
+
+```clawr
+let slidingPairs = {>
+  (a, b)
+| (a, b) <- xs.window(2)
+}
+```
+
+Semantics:
+
+- window size = 2
+    
+- stride = 1
+    
+- overlapping windows
+    
+- stop when fewer than 2 elements remain
+    
+
+---
+
+## 3. Why `{}` should _not_ be allowed here
+
+This is important.
+
+Neither of these should be legal with `{}`:
+
+```clawr
+{ (x, y) | x <- xs, y <- xs }   // ❌ cartesian, wrong meaning
+```
+
+Because:
+
+- pairing depends on **order**
+    
+- pairing depends on **adjacency**
+    
+- pairing consumes elements
+    
+
+That’s time. `{}` must stay timeless.
+
+Your split between `{}` and `{>}` really pays off here.
+
+---
+
+## 4. Summary table (mental model)
+
+|Task|Concept|Syntax|
+|---|---|---|
+|All combinations|Cartesian product|`{}`|
+|Lockstep pairing|Zip|`{>}`|
+|Chunking|Window, stride > 1|`{>}`|
+|Overlapping pairs|Sliding window|`{>}`|
+|Stateful iteration|Scan|`{>}`|
+
+If it consumes, remembers, advances, or depends on order → `{>}`.
+
+---
+
+## 5. One design recommendation
+
+Don’t _start_ with `by()` / `window()` if you don’t want to.
+
+You can:
+
+- define them later as library helpers
+    
+- or desugar them into `{>}` internally
+    
+
+What matters is that **your core model already supports them** without contradiction.
+
+That’s a sign the model is solid.
+
+---
+
+### Bottom line 🦁
+
+Yes:
+
+- `[1,2,3,4] → [(1,2),(3,4)]` is a **zipped chunk**
+    
+- `[1,2,3,4] → [(1,2),(2,3),(3,4)]` is a **sliding window**
+    
+
+Both are:
+
+- temporal
+    
+- ordered
+    
+- non-cartesian
+    
+
+And `{>}` is exactly the right home for them.
