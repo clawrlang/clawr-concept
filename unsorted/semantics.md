@@ -49,18 +49,19 @@ mutating:
     func setTimeout(duration: Duration) {
         self.timeout = duration
     }
-    
-factory:
+
+data:
+    timeout: Duration
+    maxRetries: integer
+}
+
+companion AppConfiguration {
     func default() { // implicit -> Self
         return {
             timeout: Duration.seconds(30)
             maxRetries: 3
         }
     }
-
-data:
-    timeout: Duration
-    maxRetries: integer
 }
 
 // Service that holds shared configuration
@@ -152,7 +153,16 @@ mutating:
         }
     }
 
-factory:
+data:
+    id: EntityId
+    version: EntityVersion
+    pendingEvents: [UnpublishedEvent]
+    username: string
+    name: string
+    emailAddress: EmailAddress
+}
+
+companion User {
     func register(id: EntityId, name: string, emailAddress: EmailAddress) -> User {
         self = {
             id: id
@@ -189,14 +199,6 @@ factory:
             self.apply(event)
         }
     }
-
-data:
-    id: EntityId
-    version: EntityVersion
-    pendingEvents: [UnpublishedEvent]
-    username: string
-    name: string
-    emailAddress: EmailAddress
 }
 
 // Usage in command handler
@@ -261,13 +263,14 @@ mutating:
         self.items.remove(at: index)
     }
 
-factory:
+data:
+    items: [CartItem]
+}
+
+companion ShoppingCart {
     func empty() -> ShoppingCart {
         return { items: [] }
     }
-
-data:
-    items: [CartItem]
 }
 
 // Usage showing different collection semantics
@@ -402,7 +405,14 @@ mutating:
         return self
     }
 
-factory:
+data:
+    table: string
+    conditions: [Condition]
+    orderBy: (string, Direction)?
+    limit: integer?
+}
+
+companion QueryBuilder {
     func new() -> QueryBuilder {
         return {
             table: ""
@@ -411,12 +421,6 @@ factory:
             limit: null
         }
     }
-
-data:
-    table: string
-    conditions: [Condition]
-    orderBy: (string, Direction)?
-    limit: integer?
 }
 
 // Usage patterns
@@ -489,14 +493,15 @@ mutating:
         self.address.city = city
     }
 
-factory:
-    func new(name: string, address: Address) -> Person {
-        return { name: name, address: address }
-    }
-
 data:
     name: string
     address: Address
+}
+
+companion Address {
+    func new(name: string, address: Address) -> Person {
+        return { name: name, address: address }
+    }
 }
 
 // Usage demonstrating copy-on-write cascade

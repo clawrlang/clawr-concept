@@ -18,7 +18,9 @@ object UserObject {
   func hasRole(role: Role) => hasRole(user: self.userData, role: role)
 data:
   ref userData: User
-factory:
+}
+
+companion UserObject {
   func wrap(user: User) => { userData: user }
 }
 ```
@@ -39,7 +41,9 @@ object User {
 data:
   name: string
   roles: [Role]
-factory:
+}
+
+companion UserObject {
   func new(name: string, roles: [Role]) => { name, roles }
 }
 ```

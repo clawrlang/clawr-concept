@@ -72,13 +72,14 @@ trait Entity {
     id() -> EntityId
     version() -> EntityVersion
     unpublishedEvents() -> Sequence<UnpublishedEvent>
-factory:
+
+companion:
     func reconstituted(
         id: EntityId,
         at version: PersistedEntityVersion,
         events: Sequence<PublishedEvent>
     ) -> Self
-companion:
+
     func entityType() -> TypeId
     // TODO: Is it possible to add constants to a vtable?
     // let entityType: TypeId
@@ -218,8 +219,15 @@ This entire type could be replaced with `typealias EmailAddress = string @matche
 ```clawr
 object EmailAddress {
     func value() -> string => self.value
-    
-factory:
+
+data:
+    // This is a value object (immutable) so its data must not change
+    let value: string
+    // Though `let` might be redundant here. If there are no `mutating`
+    // methods, the value cannot change anyway.
+}
+
+companion EmailAddress {
     func of(input: string) -> EmailAddress | InvalidEmail {
         guard input.matches(/^[^@]+@[^@]+\.[^@]+$/) 
             or return invalidEmail("Invalid email format")
@@ -227,17 +235,11 @@ factory:
         let normalized = input.lowercase()
         return { value: normalized }
     }
-    
+
     // For reconstruction from events (already validated)
     func prevalidated(input: string) -> EmailAddress {
         return { value: input }
     }
-
-data:
-    // This is a value object (immutable) so its data must not change
-    let value: string
-    // Though `let` might be redundant here. If there are no `mutating`
-    // methods, the value cannot change anyway.
 }
 
 union EmailError {
@@ -311,7 +313,16 @@ mutating:
         }
     }
 
-factory:
+data:
+    version: EntityVersion
+    usedAddresses: Set<EmailAddress>
+    pendingEvents: [UnpublishedEvent]
+}
+
+companion EmailAddressAvailability {
+    let singletonId = EntityId.of("email-availability")
+    func entityType() => "EmailAddressAvailability"
+
     func empty() -> EmailAddressAvailability {
         return {
             version: notPersisted,
@@ -332,16 +343,6 @@ factory:
             apply(event)
         }
     }
-
-data:
-    version: EntityVersion
-    usedAddresses: Set<EmailAddress>
-    pendingEvents: [UnpublishedEvent]
-}
-
-companion EmailAddressAvailability {
-    let singletonId = EntityId.of("email-availability")
-    func entityType() => "EmailAddressAvailability"
 
     // Get or create singleton
     async func get(ref entityStore: EntityStore) throws
@@ -417,7 +418,19 @@ mutating:
         }
     }
 
-factory:
+data:
+    id: EntityId
+    version: EntityVersion
+    pendingEvents: [UnpublishedEvent]
+
+    username: string
+    name: string
+    emailAddress: EmailAddress
+}
+
+companion User {
+    func entityType() => "User"
+
     // Register a new User
     func register(id: EntityId, name: string, emailAddress: EmailAddress) {
         self = {
@@ -451,19 +464,6 @@ factory:
             apply(event)
         }
     }
-
-data:
-    id: EntityId
-    version: EntityVersion
-    pendingEvents: [UnpublishedEvent]
-
-    username: string
-    name: string
-    emailAddress: EmailAddress
-}
-
-companion User {
-    func entityType() => "User"
 }
 ```
 

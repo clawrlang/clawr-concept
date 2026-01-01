@@ -123,8 +123,15 @@ service EventSource {
         }
     }
 
-factory: // TODO: SYNTAX: Rename? To `init:` or `factories:`?
+data:
+    repository: ref EventSourceRepository
+    receptacles: ReceptacleCollection
+    tracker: ref ProjectionTracker?
+    pollingStrategy: ref PollingStrategy
+    currentDelay: Timer?
+}
 
+companion EventSource {
     func prepare(
         repository: EventSourceRepository,
         receptacles: ReceptacleCollection,
@@ -145,8 +152,8 @@ factory: // TODO: SYNTAX: Rename? To `init:` or `factories:`?
         receptacles: ReceptacleCollection,
         [tracker]: ref ProjectionTracker?,
         [pollingStrategy]: ref PollingStrategy?
-    ) {
-        self = {
+    ) -> EventSource {
+        let x: EventSource = {
 	        prepare(
                 repository: repository
                 receptacles: receptacles
@@ -155,15 +162,9 @@ factory: // TODO: SYNTAX: Rename? To `init:` or `factories:`?
             )
         }
 
-        pollEventsTable()
+        x.pollEventsTable()
+        return x
     }
-
-data:
-    repository: ref EventSourceRepository
-    receptacles: ReceptacleCollection
-    tracker: ref ProjectionTracker?
-    pollingStrategy: ref PollingStrategy
-    currentDelay: Timer?
 }
 ```
 
@@ -235,15 +236,16 @@ mutating:
 			receptacles[eventName].remove(receptacle)
     }
 
-factory:
-
-    func from(receptacles: [ref Receptacle]) -> ReceptacleCollection {
-        self = { receptacles: Dictionary.empty() }        
-        for (receptacle in receptacles) add(receptacle)
-    }
-
 data:
     receptacles: Dictionary<string, [ref Receptacle]>
+}
+
+companion ReceptacleCollection {
+    func from(receptacles: [ref Receptacle]) -> ReceptacleCollection {
+        var r: ReceptacleCollection = { receptacles: Dictionary.empty() }        
+        for (receptacle in receptacles) r.add(receptacle)
+        return r
+    }
 }
 ```
 

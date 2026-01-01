@@ -51,9 +51,15 @@ object Money {
   pure dollars() => self.cents / 100
   pure cents() => self.cents % 100
 
-factory:
-  // These constructors (or “factory methods”) look like static methods from
-  // outside, but are used to initialise new instances.
+data:
+  let cents: integer
+}
+
+companion Money {
+  let zero: Money = { cents: 0 }
+  operator l: Money + r: Money -> Money => { cents: l.cents + r.cents }
+
+  // These static methods act as constructors (or “factory methods”).
   // The data literals indicate the content of the hidden data structure
   // They have to initialize all the fields
 
@@ -64,14 +70,6 @@ factory:
   func amount(_ a: real) => {
     cents: integer(Math.round(a * 100)
   }
-
-data:
-  let cents: integer
-}
-
-static Money {
-  let zero: Money = { cents: 0 }
-  operator l: Money + r: Money -> Money => { cents: l.cents + r.cents }
 }
 ```
 
@@ -101,8 +99,7 @@ data:
   rolls = List<integer>()
 }
 
-static BowlingGame {
-factory:
+companion BowlingGame {
   // This constructor (or “factory method”)
   func new() => { rolls: List.new() }
 }

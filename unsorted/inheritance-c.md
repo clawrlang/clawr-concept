@@ -6,6 +6,7 @@
 
 // object abstract Super {
 //     func value() => self.value
+//     init new(value: integer) => { value: value }
 //     mutating: func setValue(_ value: integer) { self.value = value }
 //     data: value: integer
 // }
@@ -22,8 +23,8 @@ typedef struct {
     integer (*value)(Super*);
 } __Super_vtable;
 
-// factory: func new(value: integer) => { value: value }
-void* Super_new_value(Super* self, integer value) {
+// init: func new(value: integer) => { value: value }
+void Super_new_value(Super* self, integer value) {
     self->Super.value = value;
 }
 
@@ -48,15 +49,17 @@ __clawr_type_info __Super_info = { .object = &__Super_object_type };
 
 // object Object: Super {
 //     func objectValue() => self.value
-// factory:
-//     func new(value: integer) => {
-//         super.new(value: value)
-//         value: value
-//     }
 // mutating:
 //     func setObjectValue(value: integer) { self.value = value }
 // data:
 //     value: integer
+// }
+//
+// companion Object {
+//     func new(value: integer) => {
+//         super.new(value: value)
+//         value: value
+//     }
 // }
 
 // data: value: integer
@@ -66,7 +69,7 @@ typedef struct {
     struct { integer value; } Object;
 } Object;
 
-// factory: func new(value: integer) => {
+// companion: func new(value: integer) -> Object => {
 //     super.new(value: value)
 //     value: value
 // }

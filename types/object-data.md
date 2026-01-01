@@ -39,7 +39,7 @@ let routeData: [LogInfo] = [
 ]
 ```
 
-An `object` is a *meaningful* entity that hides a `data` structure in its bowels. The `object` exposes interaction points (methods) that hide the specific implementation from dependent code. A `factory` method (and any other method) on the `object` has full access to the hidden `data`.
+An `object` is a *meaningful* entity that hides a `data` structure in its bowels. The `object` exposes interaction points (methods) that hide the specific implementation from dependent code. A `companion` object defined in the same module has full access to the hidden `data`.
 
 ```clawr
 // “An Object is a set of functions that operate upon implied data elements.”
@@ -48,15 +48,6 @@ object Money {
 
     func dollars() => self.cents / 100
     func cents() => self.cents % 100
-
-factory:
-    func cents(_ c: integer) => { cents: c }
-    func dollars(_ d: integer, cents: integer = 0) => {
-        cents: d * 100 + cents
-    }
-    func amount(_ a: real) => {
-        cents: integer(Math.round(a * 100))
-    }
 
 data:
     let cents: integer
@@ -67,6 +58,14 @@ data:
 
 companion Money {
     let zero: Money = { cents: 0 }
+
+    func cents(_ c: integer) => { cents: c }
+    func dollars(_ d: integer, cents: integer = 0) => {
+        cents: d * 100 + cents
+    }
+    func amount(_ a: real) => {
+        cents: integer(Math.round(a * 100))
+    }
 }
 ```
 

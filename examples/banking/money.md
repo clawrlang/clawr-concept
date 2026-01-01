@@ -109,7 +109,15 @@ object Money {
         return allocated
     }
 
-factory:
+data:
+    amountInMinorUnits: integer
+    currency: Currency
+    
+    func divisor() -> integer => 10 ^ self.currency.decimalPlaces()
+}
+
+companion Money {
+
     func zero(currency: Currency) -> Money {
         return { amountInMinorUnits: 0, currency: currency }
     }
@@ -125,12 +133,6 @@ factory:
             currency: currency
         }
     }
-
-data:
-    amountInMinorUnits: integer
-    currency: Currency
-    
-    func divisor() -> integer => 10 ^ self.currency.decimalPlaces()
 }
 
 // ============================================================================
@@ -216,7 +218,13 @@ object ExchangeRate {
         )
     }
 
-factory:
+data:
+    fromCurrency: Currency
+    toCurrency: Currency
+    rate: decimal @min(0.0)
+}
+
+companion ExchangeRate {
     func rate(_ rate: decimal, from: Currency, to: Currency) -> ExchangeRate | InvalidRate {
         guard rate > 0 or return invalidRate("Rate must be positive")
         return {
@@ -225,11 +233,6 @@ factory:
             rate: rate
         }
     }
-
-data:
-    fromCurrency: Currency
-    toCurrency: Currency
-    rate: decimal @min(0.0)
 }
 
 union ConversionError {

@@ -35,15 +35,15 @@ If that is not enough for your use-case, you can always define types the traditi
 
 ```clawr
 object Prime {
-
-func value() => self.value
-
-factory: func new(value: integer @min(2)) failable {
-  guard isPrime(value) or fail NotPrime(value)
-  self = { value: value }
+    func value() => self.value
+    data: value: integer
 }
 
-data: value: integer
+companion Prime {
+  func new(value: integer @min(2)) throws -> Prime {
+    guard isPrime(value) or fail NotPrime(value)
+    return { value: value }
+  }
 }
 ```
 

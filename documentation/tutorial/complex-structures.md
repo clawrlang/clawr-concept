@@ -68,18 +68,21 @@ object Money {
   func dollars() -> integer => self.cents / 100
   func cents() -> integer => self.cents % 100
 
-factory:
-  func for(amount: real) => { cents: integer(real * 100) }
-  func for(cents: integer) => { cents: cents }
-  func for(dollars: integer, cents: integer) => { cents: dollars * 100 + cents }
-
 data:
   cents: integer
+}
+
+companion Money {
+  func amount(_ amount: real) => { cents: integer(real * 100) }
+  func cents(_ cents: integer) => { cents: cents }
+  func dollars(_ dollars: integer, cents: integer) => { cents: dollars * 100 + cents }
 }
 ```
 
 > [!note] Object Instantiation
-> The `factory:` section defines how new `Money` objects are created. You can create a money `object` representing $1.50 in three different ways: `Money.for(amount: 1.5)`, `Money.for(cents: 150)` or `Money.for(dollars: 1, cents: 50)`. All three expressions represent the same amount, and they all result in the same `Money` object.
+> The `companion` structure defines type-namespaced functions (static methods) and variables (static fields). It has special access to `object` literals and through that defines how `Money` objects are created.
+>
+> In this case, you can create a money `object` representing $1.50 in three different ways: `Money.amount(1.5)`, `Money.cents(150)` or `Money.dollars(1, cents: 50)`. All three expressions represent the same amount, and they all result in equal `Money` objects.
 
 The `cents: integer` field defines how the value is actually stored in memory. It is irrelevant when interacting with the object, but is is essential to its implementation. All methods defined by the `Money` type will be able to interact directly with the underlying `data`, but all other code has to interact through the exposed methods. They will have no idea that the value is stored as a single `integer` and not a `real`, or two as values separating cents from dollars.
 
