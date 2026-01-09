@@ -14,7 +14,7 @@
 // data: value: integer
 typedef struct {
     __clawr_rc_header header;
-    struct { integer value; } Super;
+    integer value;
 } Super;
 typedef struct {
 // func setValue(_ value: integer)
@@ -65,17 +65,20 @@ __clawr_type_info __Super_info = { .object = &__Super_object_type };
 // data: value: integer
 typedef struct {
     __clawr_rc_header header;
-    struct { integer value; } Super;
-    struct { integer value; } Object;
+    byte [sizeof(Super) - sizeof(__clawr_rc_header)] __offset__;
+    integer value;
 } Object;
 
 // companion: func new(value: integer) -> Object => {
 //     super.new(value: value)
 //     value: value
 // }
-void* Object_new_value(void* self, integer value) {
-    ((Object*)self)->Object.value = value;
-    Super_new_value(self, value);
+void Object_companion_new_value(integer value) {
+    Object* self = allocRC(__Object_info, __clawr_ISOLATED);
+    self->value = value;
+    Super_new_value((Super*)self, value);
+    
+    // Returned with refs = 1 (“moved” to receiver)
 }
 
 // mutating: func setObjectValue(value: integer) { self.value = value }
@@ -97,8 +100,7 @@ __clawr_type_info __Object_info = { .object = &__Object_object_type };
 int main() {
 
     // mut x = Object.new(value: 42)
-    Object* x = allocRC(__Object_info, __clawr_ISOLATED);
-    Object_new_value(x, 42);
+    Object* x = Object_companion_new_value(x, 42);
 
     // mut y = x
     Object* y = retainRC(x);
@@ -108,7 +110,7 @@ int main() {
     ((__Super_vtable*)x->header.is_a.object->vtable)->setValue(x, 2);
 
     // x.setObjectValue(12)
-    x = isolateRC(x); // Can be removed by optimiser if it can prove that the RC is 1 here
+    x = isolateRC(x); // Can be removed by optimiser
     Object_setObjectValue(x, 12);
 
     // print y.objectValue()
