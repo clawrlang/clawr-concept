@@ -2,7 +2,7 @@
 
 Thanks for your interest! Clawr should be a community project, not a one-man show.
 
-I want Clawr to be the best programming language it can be. Therefore, I gladly welcome contributions from various backgrounds and perspectives. I only ask that you honour the fundamental philosophy and goals of Clawr:
+I want Clawr to be the best programming language it can be. Therefore, I will gladly welcome contributions from various backgrounds and perspectives. I only ask that you honour the fundamental philosophy and goals of Clawr:
 
 - Clawr should encourage programmers to focus on their domain, not the technology.
 - Foster loose coupling and outside.in design. Discourage (or eliminate if possible) coupling to structural design elements and tooling.
