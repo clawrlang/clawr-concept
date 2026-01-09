@@ -68,9 +68,10 @@ Clawr will perform this packing implicitly so that you as programmer do not need
 If you specify ranges for variables in a `data` structure or the `data:` section of an `object`, the compiler will know how many bits each field needs, and if the total size is small enough, the fields will be packed together.
 
 ```clawr
-data @packable DeviceStatus {
+@packable
+data DeviceStatus {
     isActive   : boolean
-    errorCode  : integer @min(0) @max(65_535)
+    errorCode  : integer @range(0...65_535)
     flags      : bitfield @count(12) @MASK(0xFFF)
     maybeflags : tritfield @count(3) @MASK(0tUUU) // only on ternary archs
 }
