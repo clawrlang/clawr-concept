@@ -66,7 +66,7 @@ object Money {
     }
     
     func multiply(by factor: decimal) -> Money {
-        let newAmount = decimal(self.amountInMinorUnits) * factor
+        const newAmount = decimal(self.amountInMinorUnits) * factor
         return Money.minorUnits(
             integer(Math.round(newAmount)),
             currency: self.currency
@@ -76,7 +76,7 @@ object Money {
     func divide(by divisor: decimal) -> Money | DivisionByZero {
         guard divisor != 0 or return divisionByZero
         
-        let newAmount = decimal(self.amountInMinorUnits) / divisor
+        const newAmount = decimal(self.amountInMinorUnits) / divisor
         return Money.minorUnits(
             integer(Math.round(newAmount)),
             currency: self.currency
@@ -92,7 +92,7 @@ object Money {
         mut remaining = self.amountInMinorUnits
         
         for proportion in proportions {
-            let amount = integer(Math.round(decimal(self.amountInMinorUnits) * proportion))
+            const amount = integer(Math.round(decimal(self.amountInMinorUnits) * proportion))
             allocated.append(Money.minorUnits(amount, currency: self.currency))
             remaining -= amount
         }
@@ -127,7 +127,7 @@ companion Money {
     }
     
     func amount(_ amount: decimal, currency: Currency) -> Money {
-        let divisor = 10 ^ currency.decimalPlaces()
+        const divisor = 10 ^ currency.decimalPlaces()
         return { 
             amountInMinorUnits: integer(Math.round(amount * divisor)),
             currency: currency
@@ -203,7 +203,7 @@ object ExchangeRate {
         guard amount.currency == self.fromCurrency 
             or return invalidConversion("Amount is in \(amount.currency), expected \(self.fromCurrency)")
         
-        let convertedMinorUnits = decimal(amount.minorUnits()) * self.rate
+        const convertedMinorUnits = decimal(amount.minorUnits()) * self.rate
         return Money.minorUnits(
             integer(Math.round(convertedMinorUnits)),
             currency: self.toCurrency
@@ -253,7 +253,7 @@ service ExchangeRateProvider {
         -> ExchangeRate | UnsupportedCurrency 
     {
         // System error (throws): Network/infrastructure failures
-        let response = await httpClient.get("/rates/\(from)/\(to)")
+        const response = await httpClient.get("/rates/\(from)/\(to)")
         
         // Domain error (union): Business rule violation
         guard response.supported 
@@ -271,7 +271,7 @@ service ExchangeRateProvider {
         to: Currency, 
         date: Date
     ) throws NetworkError, TimeoutError -> ExchangeRate | RateNotAvailable {
-        let response = await httpClient.get("/rates/\(from)/\(to)/\(date)")
+        const response = await httpClient.get("/rates/\(from)/\(to)/\(date)")
         
         guard response.exists 
             or return rateNotAvailable(from, to, date)

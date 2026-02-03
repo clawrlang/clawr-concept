@@ -2,22 +2,22 @@
 
 **1. Two Semantic Worlds**
 
-- **COW World**: `let` and `mut` - isolated, copy-on-write
+- **COW World**: `const` and `mut` - isolated, copy-on-write
 - **Ref World**: `ref` - shared references
 
 **2. No Cross-World Assignment**
 
 ```clawr
-mut/let ← mut/let  ✓  // Share memory until mutation
-ref ← ref          ✓  // Share memory always
-mut/let ← ref      ✗  // Requires copy(...)
-ref ← mut/let      ✗  // Requires copy(...)
+mut/const ← mut/const  ✓  // Share memory until mutation
+ref ← ref              ✓  // Share memory always
+mut/const ← ref        ✗  // Requires copy(...)
+ref ← mut/const        ✗  // Requires copy(...)
 ```
 
 **3. Simple Parameter Semantics**
 
 ```clawr
-func f(x: T)      // Isolated immutable (implicit let)
+func f(x: T)      // Isolated immutable (implicit const)
 func f(mut x: T)  // Isolated mutable
 func f(ref x: T)  // Shared, mutable
 ```
@@ -98,7 +98,7 @@ service MyService {
     
     func doWorkWithSnapshot() {
         // Get isolated copy - stable snapshot
-        let config = self.configService.getConfig()
+        const config = self.configService.getConfig()
         
         // This timeout never changes during this method
         await withTimeout(config.timeout()) {
@@ -142,12 +142,12 @@ mutating:
     func apply(event: PublishedEvent) {
         match event.name {
             case "Registered" => {
-                let details = JSON.deserialize<Registered>(event.details)
+                const details = JSON.deserialize<Registered>(event.details)
                 self.username = details.username
                 self.name = details.name
             }
             case "EmailAddressChanged" => {
-                let details = JSON.deserialize<EmailAddressChanged>(event.details)
+                const details = JSON.deserialize<EmailAddressChanged>(event.details)
                 self.emailAddress = EmailAddress.prevalidated(details.address)
             }
         }
@@ -220,7 +220,7 @@ service SetEmailAddressHandler: CommandHandler<SetEmailAddress, Void> {
         }
         
         // Validate email
-        let emailAddress = EmailAddress.of(command.emailAddress)
+        const emailAddress = EmailAddress.of(command.emailAddress)
             or match {
                 case invalidEmail(msg) => 
                     return CommandError.badRequest(msg)
@@ -279,7 +279,7 @@ service CheckoutService {
         // cart is isolated copy - stable during processing
         
         // Get items - another copy
-        let items = cart.items()
+        const items = cart.items()
         
         // Process each item
         for item in items {
@@ -288,14 +288,14 @@ service CheckoutService {
         }
         
         // Cart and items remain unchanged during processing
-        let finalTotal = cart.total()
+        const finalTotal = cart.total()
     }
     
     func reviewCart(ref cart: ShoppingCart) {
         // cart is shared reference - sees live updates
         
         // Get snapshot of items for review
-        let itemsSnapshot = cart.items()
+        const itemsSnapshot = cart.items()
         
         // Meanwhile, cart might be modified by user...
         // But itemsSnapshot remains stable
@@ -334,13 +334,13 @@ data:
 service UserService {
     func getUser(userId: EntityId) async -> User | UserNotFound {
         // Try cache first - returns reference if found
-        if let ref cachedUser = self.cache.get(userId) {
+        if const ref cachedUser = self.cache.get(userId) {
             // Return copy for isolation
             return cachedUser
         }
         
         // Load from database
-        let user = await self.repository.load(userId)
+        const user = await self.repository.load(userId)
             or return userNotFound(userId)
         
         // Cache it (stores reference)
@@ -351,11 +351,11 @@ service UserService {
     
     func getUserRef(userId: EntityId) async -> ref User | UserNotFound {
         // Return shared reference from cache
-        if let ref cachedUser = self.cache.get(userId) {
+        if const ref cachedUser = self.cache.get(userId) {
             return cachedUser
         }
         
-        let user = await self.repository.load(userId)
+        const user = await self.repository.load(userId)
             or return userNotFound(userId)
         
         self.cache.set(userId, user)
@@ -434,20 +434,20 @@ func example1() {
         .orderBy("name", ascending)
         .limit(10)
     
-    let query = builder.build()
+    const query = builder.build()
 }
 
 func example2() {
     // Separate steps with copies
-    let builder1 = QueryBuilder.new()
+    const builder1 = QueryBuilder.new()
     
-    let builder2 = builder1.table("users")
+    const builder2 = builder1.table("users")
     // builder1 is unchanged (was copied before mutation)
     
-    let builder3 = builder2.where({ field: "age", op: greaterThan, value: 18 })
+    const builder3 = builder2.where({ field: "age", op: greaterThan, value: 18 })
     // builder2 is unchanged
     
-    let query = builder3.build()
+    const query = builder3.build()
 }
 
 func example3() {
@@ -458,7 +458,7 @@ func example3() {
     addSorting(ref builder)
     addPagination(ref builder)
     
-    let query = builder.build()
+    const query = builder.build()
 }
 
 func addUserFilters(ref builder: QueryBuilder) {

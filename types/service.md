@@ -24,7 +24,7 @@ There is no significant runtime difference between an `object` and a `service` (
 
 ## Restrictions
 
-An `object` can be assigned to `let`, `mut` or `ref` variables as needed. It excels at maintaining isolation constraints using copy-on-write. A `service`, on the other hand, can only ever be *referenced*.
+An `object` can be assigned to `const`, `mut` or `ref` variables as needed. It excels at maintaining isolation constraints using copy-on-write. A `service`, on the other hand, can only ever be *referenced*.
 
 A `service` is an *entity*, not a *variable*. It is an *agent*, not a *data container.* It represents a system resource, not its own identity, and certainly not a “value.” Therefore, it is meaningless to copy-on-write a `service`. It is incoherent to refer to a `service` as immutable. A `service` variable can only be defined as `ref`. Its *configuration* might be immutable; it might reference copy-on-write *fields*. But the `service` itself must always apply reference semantics.
 

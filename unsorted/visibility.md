@@ -51,7 +51,7 @@ data:
 
 // Cannot call from outside User
 func example() {
-    let user = User.new(...)
+    const user = User.new(...)
     user.setEmail(...)           // ✓ OK: public method
     user.validateEmailFormat()   // ❌ ERROR: helper method
 }
@@ -64,7 +64,7 @@ func example() {
 
 // Public API
 func login(username: string, password: string) -> Session | AuthError {
-    let hash = computePasswordHash(password)
+    const hash = computePasswordHash(password)
     // ...
 }
 
@@ -83,7 +83,7 @@ helper func validatePasswordStrength(password: string) -> boolean {
 
 func saveUser(user: User, password: string) {
     // Can use helper functions from same package
-    let hash = computePasswordHash(password)  // ✓ OK
+    const hash = computePasswordHash(password)  // ✓ OK
     // ...
 }
 ```
@@ -117,7 +117,7 @@ helper data EmailParts {
 
 // Public API
 func validateEmail(input: string) -> EmailAddress | InvalidEmail {
-    let parts = EmailParts.parse(input)  // Uses helper type internally
+    const parts = EmailParts.parse(input)  // Uses helper type internally
     // ...
 }
 ```
@@ -127,7 +127,7 @@ func validateEmail(input: string) -> EmailAddress | InvalidEmail {
 
 func parseUserEmail(input: string) -> EmailAddress {
     // Can use helper types from same package
-    let parts = EmailParts.parse(input)  // ✓ OK
+    const parts = EmailParts.parse(input)  // ✓ OK
     // ...
 }
 ```
@@ -138,8 +138,8 @@ func parseUserEmail(input: string) -> EmailAddress {
 import email_validation
 
 func external() {
-    let email = validateEmail(input)  // ✓ OK: public function and type
-    let parts = EmailParts.parse()    // ❌ ERROR: helper type not visible
+    const email = validateEmail(input)  // ✓ OK: public function and type
+    const parts = EmailParts.parse()    // ❌ ERROR: helper type not visible
 }
 ```
 
@@ -184,7 +184,7 @@ service EntityStore {
     async func reconstitute<TEntity: Entity>(id: TypedEntityId) 
         -> TEntity | EntityNotFound {
         
-        let history = await self.loadHistory(id)
+        const history = await self.loadHistory(id)
             or return entityNotFound(id)
         
         return TEntity.reconstituted(

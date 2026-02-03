@@ -10,7 +10,7 @@ There is also *contravariance* which applies in the reverse. In C# this is label
 
 In Clawr, variance is implicit and straightforward.
 
-- Isolated variables (`let`, `mut`) always enjoy covariance.
+- Isolated variables (`const`, `mut`) always enjoy covariance.
 - Shared variables (`ref`) are completely invariant.
 
 ---
@@ -45,11 +45,11 @@ The classic problem: if `Array<Dog>` could be treated as `Array<Animal>`, you co
 
 Your semantics actually give you natural solutions:
 
-### `let` variables: Safe covariance
+### `const` variables: Safe covariance
 
 ```clawr
-let dogs: Array<Dog> = [fido, rover]
-let animals: Array<Animal> = dogs  // Safe!
+const dogs: Array<Dog> = [fido, rover]
+const animals: Array<Animal> = dogs  // Safe!
 ```
 
 This works because:
@@ -106,7 +106,7 @@ I lean toward **Option A** for consistency and predictability. But Option B has 
 
 Unlike C#, you don't need to store generic type parameters at runtime because:
 
-1. **`let` covariance**: Compiler enforces read-only access, so runtime doesn't care
+1. **`const` covariance**: Compiler enforces read-only access, so runtime doesn't care
 2. **`ref` invariance**: Compiler prevents the assignment entirely
 3. **`mut` invariance/copy**: Either prevented by compiler, or copy happens with new type
 
@@ -147,8 +147,8 @@ Why?
 
 ```clawr
 // Covariant conversion (safe, cheap)
-let animals: Array<Animal> = dogs  // OK for `let`
-let animals: Array<Animal> = dogs.asImmutable()  // Explicit for `mut/ref`
+const animals: Array<Animal> = dogs  // OK for `const`
+const animals: Array<Animal> = dogs.asImmutable()  // Explicit for `mut/ref`
 
 // Contravariant operations (require new container)
 mut animals: Array<Animal> = dogs.widen()  // Creates new Array<Animal>
@@ -166,11 +166,11 @@ type DogProcessor = (Dog) -> void
 type AnimalProcessor = (Animal) -> void
 
 // Functions are contravariant in parameters
-let processor: AnimalProcessor = someDogProcessor  // Error
-let processor: DogProcessor = someAnimalProcessor  // OK - can handle dogs
+const processor: AnimalProcessor = someDogProcessor  // Error
+const processor: DogProcessor = someAnimalProcessor  // OK - can handle dogs
 ```
 
-This is unaffected by `let`/`mut`/`ref` since function types are always immutable references.
+This is unaffected by `const`/`mut`/`ref` since function types are always immutable references.
 
 ---
 
@@ -291,21 +291,21 @@ The runtime must enforce this because shared mutations happen in-place.
 
 ## Covariance Rules Summary
 
-|Context|Covariance|Why|
+| Context |Covariance|Why|
 |---|---|---|
-|`let`|✅ Safe|Immutable - can only read, upcasting is safe|
-|`mut`|✅ Safe|Copy-on-write protects isolation, copy can widen type|
-|`ref`|❌ Unsafe|Shared mutation could corrupt narrower type|
+| `const` |✅ Safe|Immutable - can only read, upcasting is safe|
+| `mut`   |✅ Safe|Copy-on-write protects isolation, copy can widen type|
+| `ref`   |❌ Unsafe|Shared mutation could corrupt narrower type|
 
 ## The Beautiful Consequence
 
-This means `mut` variables are **almost as flexible as `let`** for accepting values, but with mutation capabilities:
+This means `mut` variables are **almost as flexible as `const`** for accepting values, but with mutation capabilities:
 
 ```clawr
 // All of these work:
-let dogs: Array<Dog> = [fido, rover]
+const dogs: Array<Dog> = [fido, rover]
 
-let animals1: Array<Animal> = dogs  // OK - immutable covariance
+const animals1: Array<Animal> = dogs  // OK - immutable covariance
 mut animals2: Array<Animal> = dogs  // OK - copy-on-write covariance
 ref animals3: Array<Animal> = dogs  // ERROR - would allow corruption
 ```
@@ -316,7 +316,7 @@ One subtlety:
 
 ```clawr
 mut c: Container<Animal> = Container<Dog>.new(fido)
-let animal: Animal = c.value()  // What do we get?
+const animal: Animal = c.value()  // What do we get?
 ```
 
 Before any mutation occurs, `c` still references the `Container<Dog>` memory. But `c.value()` returns `Animal`. This works because:
@@ -332,7 +332,7 @@ Before any mutation occurs, `c` still references the `Container<Dog>` memory. Bu
 1. Maximum flexibility
 2. Zero runtime type tracking overhead
 3. Complete type safety (via copy-on-write)
-4. Intuitive behavior: "`mut` is flexible like `let`, but can be modified"
+4. Intuitive behavior: "`mut` is flexible like `const`, but can be modified"
 
 The only restriction remains on `ref`, which makes sense: shared mutable state must be type-exact.
 

@@ -106,7 +106,7 @@ object Money {
     
     // Never fails - no error type
     func multiply(by factor: decimal) -> Money {
-        let newAmount = decimal(self.amountInMinorUnits) * factor
+        const newAmount = decimal(self.amountInMinorUnits) * factor
         return Money.minorUnits(
             integer(Math.round(newAmount)),
             currency: self.currency
@@ -117,7 +117,7 @@ object Money {
     func divide(by divisor: decimal) -> Money | DivisionByZero {
         guard divisor != 0 or return divisionByZero
         
-        let newAmount = decimal(self.amountInMinorUnits) / divisor
+        const newAmount = decimal(self.amountInMinorUnits) / divisor
         return Money.minorUnits(
             integer(Math.round(newAmount)),
             currency: self.currency
@@ -137,14 +137,14 @@ object Money {
         mut remaining = self.amountInMinorUnits
         
         for proportion in proportions {
-            let amount = integer(Math.round(decimal(self.amountInMinorUnits) * proportion))
+            const amount = integer(Math.round(decimal(self.amountInMinorUnits) * proportion))
             allocated.append(Money.minorUnits(amount, currency: self.currency))
             remaining -= amount
         }
         
         // Distribute remainder
         if remaining != 0 {
-            let firstAmount = allocated[0].amountInMinorUnits + remaining
+            const firstAmount = allocated[0].amountInMinorUnits + remaining
             allocated[0] = Money.minorUnits(firstAmount, currency: self.currency)
         }
         
@@ -171,7 +171,7 @@ companion Money {
     func amount(_ amount: decimal, currency: Currency) -> Money | NegativeAmount {
         guard amount >= 0 or return negativeAmount
         
-        let divisor = 10 ^ currency.decimalPlaces()
+        const divisor = 10 ^ currency.decimalPlaces()
         return { 
             amountInMinorUnits: integer(Math.round(amount * divisor)),
             currency: currency
@@ -251,7 +251,7 @@ object ExchangeRate {
         guard amount.currency == self.fromCurrency 
             or return currencyMismatch(amount.currency, self.fromCurrency)
         
-        let convertedMinorUnits = decimal(amount.minorUnits()) * self.rate
+        const convertedMinorUnits = decimal(amount.minorUnits()) * self.rate
         return Money.minorUnits(
             integer(Math.round(convertedMinorUnits)),
             currency: self.toCurrency
@@ -305,7 +305,7 @@ service ExchangeRateProvider {
         guard currencyPairSupported(from, to) 
             or return unsupportedCurrency(from, to)
         
-        let response = await httpClient.get("/rates/current/\(from)/\(to)")
+        const response = await httpClient.get("/rates/current/\(from)/\(to)")
         return ExchangeRate.rate(response.rate, from: from, to: to)?
     }
     
@@ -324,12 +324,12 @@ service ExchangeRateProvider {
         guard withinRateLimit() 
             or return rateLimitExceeded(getRateLimitReset())
         
-        let response = await httpClient.get("/rates/historical/\(from)/\(to)/\(date)")
+        const response = await httpClient.get("/rates/historical/\(from)/\(to)/\(date)")
         
         guard response.exists 
             or return rateNotAvailable(from, to, date)
         
-        let rate = ExchangeRate.rate(
+        const rate = ExchangeRate.rate(
             response.rate, 
             from: from, 
             to: to,
@@ -355,7 +355,7 @@ service ExchangeRateProvider {
             or return rateLimitExceeded(getRateLimitReset())
         
         // Other errors are caught and handled internally
-        let response = await httpClient.get("/rates/current/\(from)/\(to)")
+        const response = await httpClient.get("/rates/current/\(from)/\(to)")
         return ExchangeRate.rate(response.rate, from: from, to: to)
             or return unsupportedCurrency(from, to)  // Fallback
     }
@@ -402,7 +402,7 @@ func convertMoney(amount: Money, to: Currency)
     throws NetworkError
     -> Money | UnsupportedCurrency | CurrencyMismatch
 {
-    let rate = getCurrentRate(from: amount.currency, to: to)?
+    const rate = getCurrentRate(from: amount.currency, to: to)?
     return rate.convert(amount)?
 }
 
@@ -416,8 +416,8 @@ func calculateTotalInTargetCurrency(
     
     for amount in amounts {
         if amount.currency != targetCurrency {
-            let rate = getCurrentRate(from: amount.currency, to: targetCurrency)?
-            let converted = rate.convert(amount)?
+            const rate = getCurrentRate(from: amount.currency, to: targetCurrency)?
+            const converted = rate.convert(amount)?
             total = (total + converted)?
         } else {
             total = (total + amount)?

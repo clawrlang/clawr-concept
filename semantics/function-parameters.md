@@ -11,15 +11,15 @@ Parameters have one extra semantics mode that ordinary variables cannot use:
     - No copy created
     - Cannot be modified by the function
     - Could be modified by other thread if parallel execution is enabled
-- **`let`**: Immutable isolated access
+- **`const`**: Immutable isolated access
     - Semantically similar to the default, but cannot be affected by parallel mutation
-    - Accepts: `let` or `mut` variables (and unassigned return values) but not `ref`
+    - Accepts: `const` or `mut` variables (and unassigned return values) but not `ref`
     - No copy created
     - Cannot be modified by the function
     - Value is immutable within function scope
 - **`mut`**: Mutable isolated access
-	- Semantically equivalent to `let`, but allows mutation in the function body
-    - Accepts: `let` or `mut` variables (and unassigned return values) but not `ref`
+	- Semantically equivalent to `const`, but allows mutation in the function body
+    - Accepts: `const` or `mut` variables (and unassigned return values) but not `ref`
     - Copies if mutating and high ref-count (CoW)
     - Reference count incremented on call
     - Value is mutable within function scope
@@ -32,21 +32,21 @@ Parameters have one extra semantics mode that ordinary variables cannot use:
 
 ### Tension
 
-Not sure if the signature should only allow `let` and not `mut`. Maybe the developer should be allowed to shadow the variable instead:
+Not sure if the signature should only allow `const` and not `mut`. Maybe the developer should be allowed to shadow the variable instead:
 
 ```clawr
-func foo(label varName: let Type) {
+func foo(label varName: const Type) {
   mut varName = varName // Makes varName mutable but does not increment refcount
   // Now varName can be mutated
   varName.modify()
 }
 ```
 
-Or maybe `let` and `mut` are interchangeable?
+Or maybe `const` and `mut` are interchangeable?
 
 ```clawr
 trait SomeTrait {
-  func foo(label varName: let Type)
+  func foo(label varName: const Type)
 }
 
 object SomeObject: SomeTrait {
@@ -71,13 +71,13 @@ object IncorrectObject: SomeTrait {
 ### Example 1: `mut` parameter with COW
 
 ```clawr
-func transform(value: mut Data) -> let Data {
+func transform(value: mut Data) -> const Data {
   value.modify()  // Triggers COW if refs > 1
   return value
 }
 
 mut original = Data.new()
-let result = transform(original)
+const result = transform(original)
 // original unchanged (was copied on write inside transform)
 // result contains the modified version
 ```
@@ -94,12 +94,12 @@ let result = transform(original)
 ### Example 2: `mut` parameter without copy
 
 ```clawr
-func transform(value: mut Data) -> let Data {
+func transform(value: mut Data) -> const Data {
   value.modify()  // Triggers COW if refs > 1
   return value
 }
 
-let result = transform(Data.new())
+const result = transform(Data.new())
 // No copy needed - Data.new() was unique (refs == 1)
 ```
 
@@ -111,16 +111,16 @@ let result = transform(Data.new())
 4. Returns the modified value
 5. Efficient - zero copies
 
-### Example 3: `let` parameter
+### Example 3: `const` parameter
 
 ```clawr
-func analyze(data: let Data) -> Report {
+func analyze(data: const Data) -> Report {
   // Cannot modify data
   return Report.from(data)
 }
 
 mut myData = Data.new()
-let report = analyze(myData)
+const report = analyze(myData)
 // myData still accessible and unchanged
 ```
 
@@ -140,7 +140,7 @@ func size(data: Data) -> Int {  // Implicit: data: in Data
 
 mut data1 = Data.new()
 ref data2 = Data.new()
-let data3 = Data.new()
+const data3 = Data.new()
 
 size(data1)  // OK
 size(data2)  // OK
@@ -162,13 +162,13 @@ size(data3)  // OK
 1. Parameters increment reference counts (cheap)
 2. Read-only operations never trigger copies
 3. Mutations trigger COW only when `refs` > 1
-4. `mut` and `let` differ only in compile-time mutation permission
+4. `mut` and `const` differ only in compile-time mutation permission
 5. `ref` is the only one with shared mutation semantics
 
 ## Return Type Interaction
 
 ```clawr
-func process(data: mut Data) -> let Data {
+func process(data: mut Data) -> const Data {
   data.modify()
   return data  // Returns ISOLATED (cannot prove unique)
 }
@@ -191,10 +191,10 @@ mut m2 = process(...)  // OK: ISOLATED → ISOLATED
 func example(
     param1: Data,              // Implicit: in Data (read-only, any variable)
     param2: in Data,           // Explicit: read-only, any variable
-    param3: let Data,          // Immutable isolated (let/mut variables)
-    param4: mut Data,          // Mutable isolated (let/mut variables, COW)
+    param3: const Data,        // Immutable isolated (const/mut variables)
+    param4: mut Data,          // Mutable isolated (const/mut variables, COW)
     param5: ref Data           // Shared mutable (ref variables only)
-) -> let Result {              // Returns ISOLATED
+) -> const Result {            // Returns ISOLATED
   // Function body
 }
 

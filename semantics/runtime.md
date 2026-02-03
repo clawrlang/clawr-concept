@@ -38,7 +38,7 @@ static const uintptr_t __clawr_REFC_BITMASK   = ~(__clawr_COPYING_FLAG | __clawr
 
 /// @brief Reference Semantics (`ref` variable) - One entity, multiple variables
 static const uintptr_t __clawr_SHARED         = 0;
-/// @brief Isolation Semantics (`let`, `mut` variable) - Variables modified independently
+/// @brief Isolation Semantics (`const`, `mut` variable) - Variables modified independently
 static const uintptr_t __clawr_ISOLATED       = __clawr_ISOLATION_FLAG;
 
 /// @brief Descriptor for a trait. The address of a descriptor is a unique identifier

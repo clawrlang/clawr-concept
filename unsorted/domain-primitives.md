@@ -45,8 +45,8 @@ These are two different types:
 domain EntityId = string @matching(/^a-z0-9$/g) @maxlength(256)
 domain EntityType = string @matching(/^a-z0-9$/g) @maxlength(256)
 
-let x: EntityId = ...
-let y: EntityName = x // Compile-time error - different types
+const x: EntityId = ...
+const y: EntityName = x // Compile-time error - different types
 ```
 
 **`typealias` does not create a type.**
@@ -57,30 +57,30 @@ These ara two aliases for the same constraint:
 typealias EntityId = string @matching(/^a-z0-9$/g) @maxlength(256)
 typealias EntityType = string @matching(/^a-z0-9$/g) @maxlength(256)
 
-let x: EntityId = ...
-let y: EntityName = x // Allowed - same type (`string`)
+const x: EntityId = ...
+const y: EntityName = x // Allowed - same type (`string`)
 ```
 
 The above is equivalent to:
 
 ```clawr
-let x: string @matching(/^a-z0-9$/g) @maxlength(256) = ...
-let y: string @matching(/^a-z0-9$/g) @maxlength(256) = x
+const x: string @matching(/^a-z0-9$/g) @maxlength(256) = ...
+const y: string @matching(/^a-z0-9$/g) @maxlength(256) = x
 ```
 
 ## Implicit Types
 
 ```clawr
-let x = 5
+const x = 5
 ```
 
-The initial value (5) is of a highly constrained type (`integer @value(5)`). This is not a type you would typically assign a variable, but in this case the variable is defined as immutable (`let`) and can be implicitly typed, constrained to only allow the value it actually has. Therefore it *will* have that type.
+The initial value (5) is of a highly constrained type (`integer @value(5)`). This is not a type you would typically assign a variable, but in this case the variable is defined as immutable (`const`) and can be implicitly typed, constrained to only allow the value it actually has. Therefore it *will* have that type.
 
 Maybe this type-system (with implicit typing to a single value) can be used to afford Haskell-like optimisation too?
 
 ```clawr
-let x = 5 // integer @value(5)
-let y = x * 3 // integer @value(15)
+const x = 5 // integer @value(5)
+const y = x * 3 // integer @value(15)
 ```
 
 This could replace any reference to `x` with the numeric value 5 and any reference to `y` with the value 15. Inlined in the machine code! The variables themselves are then redundant and can be elided.
@@ -93,8 +93,8 @@ Support provably subset regex types:
 type Lowercase = string @matching(/^[a-z]+$/)
 type Alphanumeric = string @matching(/^[a-z0-9]+$/)
 
-let lower: Lowercase = "abc"
-let alpha: Alphanumeric = lower  // Could prove this is safe (lowercase ⊂ alphanumeric)
+const lower: Lowercase = "abc"
+const alpha: Alphanumeric = lower  // Could prove this is safe (lowercase ⊂ alphanumeric)
 ```
 
 Regex subset relationships can get complex quickly. This might not be possible, or might be very hard to maintain. Therefore it is not scheduled for v1, but a potential future direction.

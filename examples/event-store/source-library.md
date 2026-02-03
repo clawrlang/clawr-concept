@@ -82,7 +82,7 @@ companion:
 
     func entityType() -> TypeId
     // TODO: Is it possible to add constants to a vtable?
-    // let entityType: TypeId
+    // const entityType: TypeId
 }
 
 extension Entity {
@@ -99,7 +99,7 @@ service EntityStore {
     async func reconstitute<TEntity: Entity>(id: TypedEntityId) throws
             -> TEntity | EntityNotFound {
 
-        let events = await loadHistory(id.entityId, id.entityType)
+        const events = await loadHistory(id.entityId, id.entityType)
             or return entityNotFound(id.entityId)
         return TEntity.reconstitute(id.entityId, at: history.version, from: history.events)
     }
@@ -129,21 +129,21 @@ service EventPublisher {
         as actor: string
     ) throws -> Void | ConcurrencyConflict {
         
-        let transaction = await database.beginTransaction()
+        const transaction = await database.beginTransaction()
         defer { transaction.rollback() }
         
         // Get next global position
-        let position = await getNextPosition()
+        const position = await getNextPosition()
         
         // Save each entity's events
         for entity in entities {
             guard entity.hasChanges() or continue
 
-            let events = entity.unpublishedEvents()
+            const events = entity.unpublishedEvents()
 
             // Check version
             // Get both version and max ordinal in one query
-            let (currentVersion, maxOrdinal) = await getVersionAndMaxOrdinal(entity.id())
+            const (currentVersion, maxOrdinal) = await getVersionAndMaxOrdinal(entity.id())
 
             guard currentVersion == entity.version() 
                 or return concurrencyConflict(
@@ -192,7 +192,7 @@ service EventPublisher {
         throws -> (integer, integer)?
     {
         // Single roundtrip query
-        let result = await queryOne(
+        const result = await queryOne(
             """
             SELECT 
                 e.version, -- NULL if not exists
@@ -222,8 +222,8 @@ object EmailAddress {
 
 data:
     // This is a value object (immutable) so its data must not change
-    let value: string
-    // Though `let` might be redundant here. If there are no `mutating`
+    const value: string
+    // Though `const` might be redundant here. If there are no `mutating`
     // methods, the value cannot change anyway.
 }
 
@@ -232,7 +232,7 @@ companion EmailAddress {
         guard input.matches(/^[^@]+@[^@]+\.[^@]+$/) 
             or return invalidEmail("Invalid email format")
         
-        let normalized = input.lowercase()
+        const normalized = input.lowercase()
         return { value: normalized }
     }
 
@@ -277,7 +277,7 @@ mutating:
         guard self.isAvailable(email)
             or return emailAlreadyClaimed(email)
 
-        let details: EmailAddressDetails = {
+        const details: EmailAddressDetails = {
             emailAddress: email.value()
         }
         pendingEvents.append({
@@ -288,7 +288,7 @@ mutating:
     
     // Domain operation: Release email address
     func release(email: EmailAddress) {
-        let details: EmailAddressDetails = {
+        const details: EmailAddressDetails = {
             emailAddress: email.value()
         }
         pendingEvents.append({
@@ -301,12 +301,12 @@ mutating:
     func apply(event: PublishedEvent) {
         match event.name {
             case "EmailAddressClaimed" => {
-                let details = JSON.deserialize<EmailAddressDetails>(event.details)
+                const details = JSON.deserialize<EmailAddressDetails>(event.details)
                 self.usedAddresses.add(
                     EmailAddress.prevalidated(details.emailAddress))
             }
             case "EmailAddressReleased" => {
-                let details = JSON.deserialize<EmailAddressDetails>(event.details)
+                const details = JSON.deserialize<EmailAddressDetails>(event.details)
                 self.usedAddresses.remove(
                     EmailAddress.prevalidated(details.emailAddress))
             }
@@ -320,7 +320,7 @@ data:
 }
 
 companion EmailAddressAvailability {
-    let singletonId = EntityId.of("email-availability")
+    const singletonId = EntityId.of("email-availability")
     func entityType() => "EmailAddressAvailability"
 
     func empty() -> EmailAddressAvailability {
@@ -347,7 +347,7 @@ companion EmailAddressAvailability {
     // Get or create singleton
     async func get(ref entityStore: EntityStore) throws
             -> EmailAddressAvailability {
-        let typedId = TypedEntityId {
+        const typedId = TypedEntityId {
             entityId: EmailAddressAvailability.singletonId,
             entityType: "EmailAddressAvailability"
         }
@@ -394,7 +394,7 @@ mutating:
     func setEmailAddress(newEmail: EmailAddress) {
         guard newEmail != self.emailAddress or return // no error and no change
 
-        let details: EmailAddressChanged = {
+        const details: EmailAddressChanged = {
             address: newEmail.value()
         }
         pendingEvents.append({
@@ -407,12 +407,12 @@ mutating:
     func apply(event: UserEvent) {
         match event {
             case "Registered" => {
-                let details = JSON.deserialize<Registered>(event.details)
+                const details = JSON.deserialize<Registered>(event.details)
                 self.username = details.username
                 self.name = details.name
             }
             case "EmailAddressChanged" => {
-                let details = JSON.deserialize<EmailAddressDetails>(event.details)
+                const details = JSON.deserialize<EmailAddressDetails>(event.details)
                 self.emailAddress = EmailAddress.prevalidated(details.emailAddress)
             }
         }
@@ -484,7 +484,7 @@ service SetEmailAddressHandler: CommandHandler<SetEmailAddress, Void>
     ) throws {
         
         // Validate command
-        let emailAddress = EmailAddress.of(command.emailAddress)
+        const emailAddress = EmailAddress.of(command.emailAddress)
             or match {
                 case (message) => return CommandResult.badRequest(message)
             }

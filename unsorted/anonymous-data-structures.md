@@ -5,7 +5,7 @@
 >
 > Maybe Clawr should not have tuples? Maybe they should be `data` types instead?
 >
-> So instead of `let x = (1, "a")`, we'd write `let x = { i: 1, s: a }`. So that all positions are named.
+> So instead of `const x = (1, "a")`, we'd write `const x = { i: 1, s: a }`. So that all positions are named.
 >
 > How would that affect pattern-matching? I think Javascript allows deconstructing/decomposing objects using `const { i, s }  = x`, right?
 
@@ -13,7 +13,7 @@ This is a fascinating design decision! Let me think through the implications.
 
 ## The Appeal of Named-Only Fields
 
-Your intuition aligns well with Clawr's overall philosophy. The language emphasizes **clarity and explicit intent**—the `let`/`mut`/`ref` distinction makes semantics visible, and the object/data separation makes encapsulation explicit. Removing positional tuples would extend this principle to data structure access.
+Your intuition aligns well with Clawr's overall philosophy. The language emphasizes **clarity and explicit intent**—the `const`/`mut`/`ref` distinction makes semantics visible, and the object/data separation makes encapsulation explicit. Removing positional tuples would extend this principle to data structure access.
 
 ### Benefits
 
@@ -21,12 +21,12 @@ Your intuition aligns well with Clawr's overall philosophy. The language emphasi
 
 ```clawr
 // With tuples - what do these positions mean?
-let result = (200, "OK", 1024)
-let (status, message, size) = result
+const result = (200, "OK", 1024)
+const (status, message, size) = result
 
 // Without tuples - immediately clear
-let result = { status: 200, message: "OK", size: 1024 }
-let { status, message, size } = result
+const result = { status: 200, message: "OK", size: 1024 }
+const { status, message, size } = result
 ```
 
 **2. Robust refactoring** Adding a field to a tuple breaks every pattern match that relies on position. With named fields, you can add fields without breaking existing destructuring patterns (assuming they only extract the fields they need).
@@ -103,7 +103,7 @@ JavaScript-style shorthand could help: `{ x, y }` instead of `{ x: x, y: y }`.
 The verbosity concern is real but manageable with:
 
 - Lightweight `data` type syntax
-- Destructuring shorthands (`let { x, y } = point`)
+- Destructuring shorthands (`const { x, y } = point`)
 - Type inference for anonymous data literals
 
 ## Implementation Notes
@@ -112,7 +112,7 @@ You'd probably want:
 
 ```clawr
 // Anonymous data literal
-let point = { x: 10, y: 20 }
+const point = { x: 10, y: 20 }
 
 // Type inference for function returns
 func getCoords() -> { x: integer, y: integer } {
@@ -124,8 +124,8 @@ data Point { x: integer, y: integer }
 func getCoords() -> Point { ... }
 
 // Destructuring with pattern matching
-let { x, y } = point  // Shorthand
-let { x: xCoord, y: yCoord } = point  // Rename on extract
+const { x, y } = point  // Shorthand
+const { x: xCoord, y: yCoord } = point  // Rename on extract
 ```
 
 This keeps the syntax lightweight while maintaining the named-field philosophy.

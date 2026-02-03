@@ -23,10 +23,10 @@ In Clawr, we write the cartesian product like this:
 ```clawr
 func f(x: integer, y: integer) => x + y
 
-let xs = [1, 2, 3]
-let ys = [4, 5]
+const xs = [1, 2, 3]
+const ys = [4, 5]
 
-let c_product = { f(x, y) : x <- xs, y <- ys }.all()
+const c_product = { f(x, y) : x <- xs, y <- ys }.all()
 ```
 
 The first part is the function (`f`) used to combine the paired collection members in the output. We could use `(x, y)` to simply return pairs, but in this example we add `x + y` to return the sequence `[1 + 4, 1 + 5, 2 + 4, 2 + 5, 3 + 4, 3 + 5] = [5, 6, 6, 7, 7, 8]`.
@@ -36,10 +36,10 @@ A list cartesian product is a generator. It does not automatically create a coll
 A generator's output can be infinite in size. As long as you only extract a finite number of elements, that is not a problem as they will not be kept in memory unless explicitly collected.
 
 ```clawr
-let xs = [1, 2, 3]
-let ys = [4...] // 4, 5, 6, 7, 8, ... to infinity
+const xs = [1, 2, 3]
+const ys = [4...] // 4, 5, 6, 7, 8, ... to infinity
 
-let collected = {
+const collected = {
   x + y // f
 : x <- xs, // iterated once
   y <- ys  // iterated xs.count times
@@ -60,10 +60,10 @@ Sometimes we do not need the cartesian product. In that case the zip generator c
 To distinguish a zip generator from a cartesian product, the syntax adds an angle-bracket (`>`) to the beginning:
 
 ```clawr
-let xs = [1, 2, 3]
-let ys = [4...] // 4, 5, 6, 7, 8, ... to infinity
+const xs = [1, 2, 3]
+const ys = [4...] // 4, 5, 6, 7, 8, ... to infinity
 
-let zip_generator = {>
+const zip_generator = {>
   x + y       // yielded element
 : x <- xs     // input collection
   y <- ys
@@ -78,7 +78,7 @@ Instead of pairing all members multiplicatively, a zip generator pairs only the 
 The cartesian product is timeless. The goal is merely to generate all pairings; the order is not important (though well-defined). A zip generator is ordered, and the lists do not need to “exist,” but can be generated along the way:
 
 ```clawr
-let zip_generator = {>
+const zip_generator = {>
    x + y            // yielded element
 :  x <- xs          // input collection
 :> y := 0 ~> 1 + :y // generated value
@@ -99,7 +99,7 @@ The syntax is similar to a cartesian-product list-comprehension, though it has s
 ### Example 1: the Fibonacci Sequence
 
 ```clawr
-let fibonacci = {> f
+const fibonacci = {> f
   |> f := 0 := 1 ~> :f + ::f
 }
 ```
@@ -126,7 +126,7 @@ Here is a solution to the Bowling Game kata in Clawr:
 pure func score() -> integer {
 
   // Generator (identified by the angle-bracket meant to signal temporality--play button)
-  let frameIndices = {
+  const frameIndices = {
     > 2 * frame - strikes // This defines the yielded elements
   
     // The frame is taken from an infinite list of incrementing integers
@@ -180,7 +180,7 @@ That fits your `{>}` model _very_ naturally.
 You already have state and time, so you can say:
 
 ```clawr
-let pairs = {>
+const pairs = {>
   (a, b)
 | x <- xs
 |> a := take(x) ~> take(x)
@@ -193,7 +193,7 @@ But that’s a bit verbose.
 So it’s reasonable to introduce a **windowed binding** (purely sugar):
 
 ```clawr
-let pairs = {>
+const pairs = {>
   (a, b)
 | (a, b) <- xs.by(2)
 }
@@ -223,7 +223,7 @@ Again: temporal, ordered, stateful → `{>}` territory.
 Using state:
 
 ```clawr
-let slidingPairs = {>
+const slidingPairs = {>
   (prev, x)
 | x <- xs
 |> prev := undefined ~> x
@@ -248,7 +248,7 @@ Very consistent.
 If you allow window notation:
 
 ```clawr
-let slidingPairs = {>
+const slidingPairs = {>
   (a, b)
 | (a, b) <- xs.window(2)
 }

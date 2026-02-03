@@ -48,18 +48,18 @@ service EventSource {
         self.currentDelay?.cancel()
 
         // Poll once
-        let numNotified = self.pollEventsTableOnce()
+        const numNotified = self.pollEventsTableOnce()
 
         // Schedule next poll based on whether events were found
-        let nextDelay = self.pollingStrategy.nextDelay(numNotified)
+        const nextDelay = self.pollingStrategy.nextDelay(numNotified)
         self.currentDelay = Timer.after(nextDelay) {
             self.pollEventsTable()
         }
     }
 
     func pollEventsTableOnce() -> integer {
-        let lastPosition = self.tracker.getLastFinishedPosition() ?? -1
-        let unsortedEvents = await self.repository.getEvents(
+        const lastPosition = self.tracker.getLastFinishedPosition() ?? -1
+        const unsortedEvents = await self.repository.getEvents(
             since: lastPosition,
             maxCount: pollingStrategy.batchSize()
         )
@@ -72,7 +72,7 @@ service EventSource {
         mut eventGroups = self.groupByPosition(unsortedEvents)
 
         // CRITICAL: If batch is full, last position might be incomplete
-        let totalCount = eventGroups.flatCount(g => g.events)
+        const totalCount = eventGroups.flatCount(g => g.events)
         if (totalCount >= pollingStrategy.batchSize())
             eventGroups.removeLast()
 
@@ -104,19 +104,19 @@ service EventSource {
     ) -> [(position: integer, events: [ProjectionEvent])] {
         
         // Group and sort by position
-        let groups = events
+        const groups = events
            .group(by: event => event.position)
            .sorted(by: group => group.key)
 
         // Sort events within each group by ordinal
         return sortedGroups.map((position, events) =>
-            let sortedEvents = events.sorted(by: event => event.ordinal)
+            const sortedEvents = events.sorted(by: event => event.ordinal)
             return (position: position, events: sortedEvents)
         })
     }
     
     helper func emitEvent(event: ProjectionEvent) {
-        let receptacles = self.receptacles.getReceptacles(event.name)
+        const receptacles = self.receptacles.getReceptacles(event.name)
         // SYNTAX: Can `ref` be implicit here?
         for (ref receptacle in receptacles) {
             receptacle.update(event)
@@ -153,7 +153,7 @@ companion EventSource {
         [tracker]: ref ProjectionTracker?,
         [pollingStrategy]: ref PollingStrategy?
     ) -> EventSource {
-        let x: EventSource = {
+        const x: EventSource = {
 	        prepare(
                 repository: repository
                 receptacles: receptacles
@@ -256,7 +256,7 @@ Use database transactions to employ an all-or-nothing approach to each projected
 ```clawr
 service AtomicSQLiteProjectionTracker embodies ProjectionTracker {
     func getLastFinishedPosition() -> integer? {
-        let result = await self.database.queryOne(
+        const result = await self.database.queryOne(
             "SELECT position FROM Projections WHERE source = ?",
             self.sourceName
         )

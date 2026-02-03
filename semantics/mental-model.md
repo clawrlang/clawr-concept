@@ -1,4 +1,4 @@
-# Understanding `let`, `mut`, and `ref`: a Mental Model
+# Understanding `const`, `mut`, and `ref`: a Mental Model
 
 ## The Common Misconception
 
@@ -34,23 +34,23 @@ Critically: declaring a `mut`variable guarantees that its state/data can never c
 
 The `mut` keyword is analogous to `struct` in languages where the type defines the semantics.
 
-### `let` variable: A Named Value or a Definition
+### `const` variable: A Named Value or a Definition
 
-A `let` variable is essentially an assigned name for a particular value—what we might call a “*constant*.” The value can be a number (like $π$ or the integer 6) or a more complex structure (like GPS coordinates or the current configuration of your program). We could also say that we *define* the constant when we assign a value to it. Once defined, the constant is fixed.
+A `const` variable is essentially an assigned name for a particular value—what we might call a “*constant*.” The value can be a number (like $π$ or the integer 6) or a more complex structure (like GPS coordinates or the current configuration of your program). We could also say that we *define* the constant when we assign a value to it. Once defined, the constant is fixed.
 
-A value cannot change and still remain the same value. Similarly, a `let` variable is immutable and can only refer to its initial contents. Even if the named value is a large data structure—with arbitrarily many layers of nested structures—the variable itself is locked to the initial combination of field values. Even the tiniest change to that structure would construct a new value and the variable could not refer to that and still be considered constant.
+A value cannot change and still remain the same value. Similarly, a `const` variable is immutable and can only refer to its initial contents. Even if the named value is a large data structure—with arbitrarily many layers of nested structures—the variable itself is locked to the initial combination of field values. Even the tiniest change to that structure would construct a new value and the variable could not refer to that and still be considered constant.
 
-The `let` keyword is analogous to `let` variables with `struct` types in Swift. The runtime implementation of `let` can be exactly the same as for `mut`; the difference is at compile-time, where the compiler disallows any action other than reads.
+The `const` keyword is analogous to `let` variables with `struct` types in Swift. The runtime implementation of `const` can be exactly the same as for `mut`; the difference is at compile-time, where the compiler disallows any action other than reads.
 
-This is why `let` and `mut` variables can be freely assigned to each other. The copy operation is implicit in their identical isolation guarantees.
+This is why `const` and `mut` variables can be freely assigned to each other. The copy operation is implicit in their identical isolation guarantees.
 
 ## The Key Insight: Assignment Semantics
 
 The mental model clarifies what happens during assignment:
 
-**`let` → `mut` assignment: Copy value**
+**`const` → `mut` assignment: Copy value**
 ```
-let x: SomeData = { value: 42 }
+const x: SomeData = { value: 42 }
 mut y = x
 y.value = 99 // Does not change x
 ```
@@ -97,7 +97,7 @@ This distinction isn't academic—it directly impacts how you solve problems:
 
 **With `ref` variables**, you explicitly opt into sharing. When you see `ref` in a signature, you know that modifications may be visible elsewhere. This is sometimes necessary (updating a shared entity, coordinating between systems), but it's marked and intentional.
 
-**With `let` variables**, you have complete freedom. Immutable values can be freely copied, passed around, and shared without any concern for interference.
+**With `const` variables**, you have complete freedom. Immutable values can be freely copied, passed around, and shared without any concern for interference.
 
 ## Historical Context: Why We Think in Pointers
 
@@ -111,25 +111,25 @@ But implementation details make poor mental models. The stack/heap distinction i
 
 ## Advanced: Mixing Semantics
 
-I said before that `let` and `mut` variables cannot be manipulated by other references. This is true as long as the fields of your data structures are not `ref`. The recommendation is to make all fields `let` or `mut` to avoid this scenario, but that is not always feasible.
+I said before that `const` and `mut` variables cannot be manipulated by other references. This is true as long as the fields of your data structures are not `ref`. The recommendation is to make all fields `const` or `mut` to avoid this scenario, but that is not always feasible.
 
-Just like a `struct` in languages like C# and Swift can contain fields that refer to `class` types, Clawr types can contain `ref` fields (and still be assigned to `let` or `mut` variables). Mixing semantics complicates the metaphor.
+Just like a `struct` in languages like C# and Swift can contain fields that refer to `class` types, Clawr types can contain `ref` fields (and still be assigned to `const` or `mut` variables). Mixing semantics complicates the metaphor.
 
 When dealing with `mut` variables, a `ref` field becomes like a hand inside a drawer. That mental image may be somewhat disturbing; in this case it might be better to think of it as a web-link. It can still refer to an entity shared with other variables. That shared entity is not inside the drawer; only the link is. Therefore, it might still be manipulated in unexpected ways from the `mut` variable’s perspective.
 
 > [!tip]
-> Prefer `mut` and `let` fields when possible. Fields without explicit semantics default to `mut`.
+> Prefer `mut` and `const` fields when possible. Fields without explicit semantics default to `mut`.
 > 
-> Neither `mut` nor `let` fields in a `ref` variable can ever cause a problem. The issue only occurs in one direction.
+> Neither `mut` nor `const` fields in a `ref` variable can ever cause a problem. The issue only occurs in one direction.
 
 ## The Value of Clear Semantics
 
-The `let`/`mut`/`ref` model separates concerns:
+The `const`/`mut`/`ref` model separates concerns:
 
-- `let`: "This value never changes"
+- `const`: "This value never changes"
 - `mut`: "This is my container that only I can manipulate"  
 - `ref`: "This is a reference to an entity that resides elsewhere and may be shared by others"
 
-These guarantees let you encode domain logic directly. You're not building solutions around memory management—you're expressing the actual rules of your problem domain. When you see `mut` in your code, you know isolation. When you see `ref`, you know sharing. When you see `let`, you know immutability.
+These guarantees let you encode domain logic directly. You're not building solutions around memory management—you're expressing the actual rules of your problem domain. When you see `mut` in your code, you know isolation. When you see `ref`, you know sharing. When you see `const`, you know immutability.
 
 This is how you reason about business logic rather than fight with implementation details.

@@ -32,7 +32,7 @@ func averageCost(of purchases: [Purchase]) -> real {
   return runningTotal / count
 }
 
-let purchases: [Purchase] = [
+const purchases: [Purchase] = [
  { item: "bread", cost: 2.50 },
  { item: "butter", cost: 10.0 },
  { item: "cream", cost: 9.45 },
@@ -106,8 +106,8 @@ static:
 Now we can add moneys together:
 
 ```clawr
-let x = Money.for(cents: 100)    // $1.00
-let y = x + Money.for(cents: 50) // $1.50
+const x = Money.for(cents: 100)    // $1.00
+const y = x + Money.for(cents: 50) // $1.50
 ```
 
 We can also make objects mutable. That is not recommended for the `Money` type, so let’s imagine a different concept.
@@ -139,7 +139,7 @@ Methods that change the underlying `data` of an `object` must be defined in the 
 
 ## Reference Semantics
 
-A `let` variable is guaranteed to never change. A `mut` variable is isolated from other variables, but a `ref`variable is dangerous. The keyword is short for “reference,” and it implies that there may be other variables (perhaps in far off code) that all *reference* and can modify the same data independently of each other, but still affecting what the others see.
+A `const` variable is guaranteed to never change. A `mut` variable is isolated from other variables, but a `ref`variable is dangerous. The keyword is short for “reference,” and it implies that there may be other variables (perhaps in far off code) that all *reference* and can modify the same data independently of each other, but still affecting what the others see.
 
 Shared Mutable State is (rightly) discouraged. Many bugs stem from shared resources that are mutated incorrectly. It is very hard to reason about state that can be modified from various parts of the code. There is also a concern about parallel execution (threads) making changes to the same value at the same time. This creates need for locking or other management tools. Locking can lead to deadlock, which stops the program from working at all. Shared Mutable State can cause many categories of bugs. 
 
@@ -195,4 +195,4 @@ Altering `y` also changed `x` in this case. In the previous example, the variabl
 
 The difference between `ref` and `mut` is *reference semantics* versus *variable isolation*. Reference semantics is usually not recommended as it causes *Shared Mutable State*. This wreaks havoc on local reasoning and leads to complications with multithreaded systems (running code in parallel). It is, however necessary in some cases.
 
-The recommendation is to start with `let` variables and only change to `mut` if mutation is needed for your algorithm, but try to keep the scope of mutability small. Avoid `ref` **entirely** unless absolutely necessary. This is especially true when working with exposed data structures as in the above examples. You should probably *never* use `ref` and `data` together actually. It can be reasonable to use `ref` with `object` variables though.
+The recommendation is to start with `const` variables and only change to `mut` if mutation is needed for your algorithm, but try to keep the scope of mutability small. Avoid `ref` **entirely** unless absolutely necessary. This is especially true when working with exposed data structures as in the above examples. You should probably *never* use `ref` and `data` together actually. It can be reasonable to use `ref` with `object` variables though.

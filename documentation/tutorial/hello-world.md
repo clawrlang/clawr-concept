@@ -57,7 +57,7 @@ The following code is equivalent to the “Hello, World” program:
 
 > [!example] Hello, World with a Variable
 > ```clawr
-> let greeting: string = "Hello, World!"
+> const greeting: string = "Hello, World!"
 > print(greeting)
 > ```
 
@@ -86,7 +86,7 @@ But programs are not useful unless they can make decisions and computations. Bef
 > ```clawr
 > // This is a list of elements.
 > // Lists can be indexed and enumerated.
-> let names = [
+> const names = [
 >   "Alice",
 >   "Bob",
 >   "Charlie",
@@ -124,7 +124,7 @@ Now that we have a list of data, we can make choices based on the constitution o
 
 > [!example] `if` statement
 > ```clawr
-> let names = [
+> const names = [
 >   "Alice",
 >   "Bob",
 >   "Charlie",
@@ -181,8 +181,8 @@ For example, let’s define a `data` structure to represent a **Point** in 2D sp
 >   y: real
 > }
 >
-> let origin: Point = {x: 0, y: 0}
-> let otherPoint: Point = {x: 5, y: -5}
+> const origin: Point = {x: 0, y: 0}
+> const otherPoint: Point = {x: 5, y: -5}
 >
 > print("Origin: \(origin)")
 > print("Other Point: \(otherPoint)")
@@ -219,8 +219,8 @@ Let’s take a look at how an **object** works in Clawr:
 
 ```Clawr
 object Rectangle {
-  let width: real
-  let height: real
+  const width: real
+  const height: real
 
   init(w: real, h: real) {
     self.width = w
@@ -239,7 +239,7 @@ mutating:
   }
 }
 
-let rect = Rectangle(5, 10)
+const rect = Rectangle(5, 10)
 print("Area:", rect.area())  // 50
 rect.scale(by: 7)
 print("New Area:", rect.area())  // 350
@@ -292,7 +292,7 @@ When you are building a user-operated data-entry application, you should use `ob
 
 The `struct` keyword is preferred when the *specific structure* of the data is well known, unchanging and *essential*. Examples of this include DTOs and DAOs in communications protocols.
 
-When you use `struct`, you should prefer immutable (`let`) variables. When data needs to change, there are typically rules and validations that need to be applied. The `struct`cannot ensure validity.
+When you use `struct`, you should prefer immutable (`const`) variables. When data needs to change, there are typically rules and validations that need to be applied. The `struct`cannot ensure validity.
 
 Instead `struct` should be used in situations where the data is already known and can be presumed already valid. When communicating between subsystems, or analysing big data, that is a reasonable assumption. The data has already been accepted into the system and was probably validated at that point.
 

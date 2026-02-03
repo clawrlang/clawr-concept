@@ -47,7 +47,7 @@ Rust uses ownership and borrowing to manage memory safety. While this is powerfu
 
 | Keyword | Mutability | Semantics              | Use Case             |
 | ------- | ---------- | ---------------------- | -------------------- |
-| `let`   | Immutable  | Isolated/Copy on Write | Constants, pure data |
+| `const` | Immutable  | Isolated/Copy on Write | Constants, pure data |
 | `mut`   | Mutable    | Isolated/Copy on Write | Isolated mutation    |
 | `ref`   | Mutable    | Shared Reference       | Shared state         |
 
@@ -151,10 +151,10 @@ archiveToDatabase(finalScore)  // Safe to share
 
 ### Memory Structure
 
-To enforce isolation semantics, the runtime will need to manage memory with metadata indicating whether a memory block is `ISOLATED` or a shared `SHARED`.
+To enforce isolation semantics, the runtime will need to manage memory with metadata indicating whether a memory block is `ISOLATED` or `SHARED`.
 
 - **Semantics flag**: `ISOLATED` (for `let`/`mut` variables) or `SHARED` (for `ref` variables)
-- **Reference Counter**: To track how many variables reference a memory block
+- **Reference Counter**: To track how many variables reference each memory block
 - **Type Information**: To enable polymorphic behaviour and method dispatch, and to support runtime type-checking if needed
 
 ### Copy-on-Write Optimisation
@@ -162,10 +162,9 @@ To enforce isolation semantics, the runtime will need to manage memory with meta
 The implementation should use automatic reference counting (ARC) with copy-on-write:
 
 1. No copying at assignment: When x = y, both variables initially reference the same memory
-2. Copy only when needed: A copy is made only when:
+2. Copy only when needed: A copy is made only when a mutating operation is about to be performed and…
     - Memory is flagged ISOLATED, AND
-    - Reference count > 1, AND
-    - A mutating operation is performed
+    - Reference count > 1
 3. Never copy SHARED memory: This would violate the shared-state contract
 
 This provides the safety of value semantics with the performance of reference semantics.

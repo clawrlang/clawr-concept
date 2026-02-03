@@ -139,7 +139,7 @@ int RectBlock·area(void* self) {
 
 // Factory method in RectBlock namespace
 RectBlock* RectBlock¸new_width_depth_height(int width, int depth, int height) {
-    // let self = RectBlock { Prism.new(height: height), width, depth }
+    // const self = RectBlock { Prism.new(height: height), width, depth }
     RectBlock* self = allocRC(RectBlock, __rc_ISOLATED);
     self->width = width;
     self->depth = depth;

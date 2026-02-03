@@ -31,7 +31,7 @@ data LogInfo {
   velocity: { heading: real, speed: real }
 }
 
-let routeData: [LogInfo] = [
+const routeData: [LogInfo] = [
   {
     position: {latitude: 10.1, longitude: 12.2},
     velocity: {heading: 120.0, speed: 98.5}
@@ -50,14 +50,14 @@ object Money {
     func cents() => self.cents % 100
 
 data:
-    let cents: integer
+    const cents: integer
 }
 
 // A companion object defines “static” members and methods.
 // It has full access to the internal data of the main object type.
 
 companion Money {
-    let zero: Money = { cents: 0 }
+    const zero: Money = { cents: 0 }
 
     func cents(_ c: integer) => { cents: c }
     func dollars(_ d: integer, cents: integer = 0) => {

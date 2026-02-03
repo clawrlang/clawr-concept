@@ -55,7 +55,7 @@ But in Clawr, you'd face:
 
 ## Clawr's Semantic Advantage
 
-Here's where Clawr's `let`/`mut`/`ref` model becomes interesting:
+Here's where Clawr's `const`/`mut`/`ref` model becomes interesting:
 
 ```clawr
 // BigDecimal type could be defined once
@@ -69,14 +69,14 @@ data:
 }
 
 // Use it with appropriate semantics
-let pi = BigDecimal.parse("3.14159265358979323846...")
+const pi = BigDecimal.parse("3.14159265358979323846...")
 mut calculation = BigDecimal.zero()
 ref sharedAccount = account.balance  // If BigDecimal
 ```
 
 The same `BigDecimal` type works whether you need:
 
-- Immutable constants (`let`)
+- Immutable constants (`const`)
 - Local isolated calculations (`mut`)
 - Shared mutable state (`ref`)
 
@@ -105,10 +105,10 @@ Ah, that's a much more elegant approach! This fits beautifully with Clawr's phil
 Instead of having separate types like `Float64`, `BigDecimal`, etc., you have **one conceptual type** (`real`) that the compiler optimizes based on provable constraints:
 
 ```clawr
-let x: real = 3.14159  // Compiler infers precision needs
+const x: real = 3.14159  // Compiler infers precision needs
 
-let y: real@precision(15) = 3.14159  // Fits in Float64
-let z: real@precision(50) = pi_to_50_digits  // Requires BigDecimal
+const y: real@precision(15) = 3.14159  // Fits in Float64
+const z: real@precision(50) = pi_to_50_digits  // Requires BigDecimal
 
 func calculate(value: real@range(-1000..1000)) -> real {
     // Compiler knows value fits in smaller representation
@@ -119,7 +119,7 @@ func calculate(value: real@range(-1000..1000)) -> real {
 
 This mirrors your variable semantics philosophy:
 
-- **Variable semantics**: Same type, different behavior (`let`/`mut`/`ref`) based on usage context
+- **Variable semantics**: Same type, different behavior (`const`/`mut`/`ref`) based on usage context
 - **Numeric precision**: Same type, different representation (`Float64`/`Float128`/`BigDecimal`) based on provable constraints
 
 The type itself (`real` or `BowlingGame`) doesn't dictate implementation details—the context does.
@@ -152,15 +152,15 @@ The tricky parts would be:
 2. **Type inference**: How do you prove sufficient precision?
     
     ```clawr
-    let a: real@precision(10) = ...
-    let b: real@precision(10) = ...
-    let c = a * b  // Needs precision(20)? Or still 10?
+    const a: real@precision(10) = ...
+    const b: real@precision(10) = ...
+    const c = a * b  // Needs precision(20)? Or still 10?
     ```
     
 3. **Runtime vs compile-time**: Some constraints may only be checkable at runtime
     
     ```clawr
-    let userInput: real = parseInput()
+    const userInput: real = parseInput()
     // Can't prove precision at compile time
     ```
     
@@ -210,7 +210,7 @@ The runtime representation choice could be based on the intersection of constrai
     
 3. **Error handling**: What happens when a runtime value violates its constraint annotation? Trap? Exception? Implicit conversion?
     
-4. **Literal inference**: Does `let x: real = 1.23` get minimal precision, or does the compiler track that it's exactly representable?
+4. **Literal inference**: Does `const x: real = 1.23` get minimal precision, or does the compiler track that it's exactly representable?
     
 
 This is a really compelling design. The constraint system lets you express _intent_ (precision needs, range requirements) without dictating _mechanism_ (Float64, BigDecimal). Very Clawr-like!
@@ -229,11 +229,11 @@ Ah yes, you're absolutely right! I was confusing two different concepts:
 **`@precision` is a capacity guarantee**, not a value constraint:
 
 ```clawr
-let x: real@precision(2) = 3.14159265  // OK: rounds to 3.14
-let y: real@precision(10) = 3.14       // OK: stores 3.14 (exact)
+const x: real@precision(2) = 3.14159265  // OK: rounds to 3.14
+const y: real@precision(10) = 3.14       // OK: stores 3.14 (exact)
 
 // Contrast with @range (actual constraint):
-let z: real@range(0..100) = 150  // ERROR: value outside range
+const z: real@range(0..100) = 150  // ERROR: value outside range
 ```
 
 - `@precision(2)`: "This variable can store at least 2 decimal digits accurately"
@@ -244,11 +244,11 @@ let z: real@range(0..100) = 150  // ERROR: value outside range
 This means precision creates a **subtyping relationship**:
 
 ```clawr
-let high: real@precision(10) = 3.14159
-let low: real@precision(2) = high  // OK: rounds/truncates
+const high: real@precision(10) = 3.14159
+const low: real@precision(2) = high  // OK: rounds/truncates
 
-let low2: real@precision(2) = 3.14
-let high2: real@precision(10) = low2  // OK: exact value preserved
+const low2: real@precision(2) = 3.14
+const high2: real@precision(10) = low2  // OK: exact value preserved
 
 // real@precision(10) is a subtype of real@precision(2)
 // (more precision = narrower type = more specific guarantee)
@@ -259,14 +259,14 @@ let high2: real@precision(10) = low2  // OK: exact value preserved
 And your multiplication insight is key:
 
 ```clawr
-let a: real@precision(5) = ...
-let b: real@precision(3) = ...
+const a: real@precision(5) = ...
+const b: real@precision(3) = ...
 
 // What is the type of a * b?
-let c = a * b  // Should be: real@precision(8)
+const c = a * b  // Should be: real@precision(8)
 
 // The compiler must track precision requirements:
-let result: real@precision(2) = a * b  
+const result: real@precision(2) = a * b  
 // OK: 8 digits available, rounds to 2
 ```
 
@@ -275,7 +275,7 @@ let result: real@precision(2) = a * b
 So the compiler's job becomes:
 
 ```clawr
-let x: real@precision(2) = 3.14
+const x: real@precision(2) = 3.14
 
 // Compiler decides:
 // - Float32? Has ~7 decimal digits → sufficient
@@ -291,12 +291,12 @@ let x: real@precision(2) = 3.14
 ## Mixed Precision Arithmetic
 
 ```clawr
-let price: real@precision(2) = 19.99      // Money: Float32 ok
-let rate: real@precision(6) = 0.065       // Interest: Float64 ok
-let tax: real@precision(8) = price * rate // Needs Float64
+const price: real@precision(2) = 19.99      // Money: Float32 ok
+const rate: real@precision(6) = 0.065       // Interest: Float64 ok
+const tax: real@precision(8) = price * rate // Needs Float64
 
 // But if you declare:
-let tax: real@precision(2) = price * rate
+const tax: real@precision(2) = price * rate
 // Result is rounded back to 2 digits
 ```
 
@@ -351,12 +351,12 @@ You can be:
 
 ```clawr
 // Precision is about representation capacity
-let pi: real@precision(5) = 3.14159265  // Stores ~3.14159
-let pi: real@precision(15) = 3.14159265 // Stores all digits given
+const pi: real@precision(5) = 3.14159265  // Stores ~3.14159
+const pi: real@precision(15) = 3.14159265 // Stores all digits given
 
 // Accuracy is about the value itself (not the type)
-let almostPi: real@precision(15) = 3.0  // High precision, but inaccurate value
-let goodPi: real@precision(5) = 3.14159 // Lower precision, but accurate
+const almostPi: real@precision(15) = 3.0  // High precision, but inaccurate value
+const goodPi: real@precision(5) = 3.14159 // Lower precision, but accurate
 ```
 
 So `@precision` is indeed the right name. It describes the **resolution of the storage**, not the correctness of the value.
@@ -364,12 +364,12 @@ So `@precision` is indeed the right name. It describes the **resolution of the s
 ## Arithmetic and Precision Loss
 
 ```clawr
-let a: real@precision(10) = 1.234567890
-let b: real@precision(10) = 9.876543210
+const a: real@precision(10) = 1.234567890
+const b: real@precision(10) = 9.876543210
 
 // Mathematically: a + b = 11.11111110 (needs 10 digits after decimal point)
 // But if stored in @precision(5):
-let c: real@precision(5) = a + b  // ≈ 11.11111 (lost precision, still accurate)
+const c: real@precision(5) = a + b  // ≈ 11.11111 (lost precision, still accurate)
 ```
 
 You lose precision through rounding, but if the rounding is done correctly, the result remains accurate (within the limits of that precision).

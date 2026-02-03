@@ -5,9 +5,9 @@ Rawry hates accidental sharing.
 
 He hates it with the fiery, domain-defending passion of a lion who has read one “clever” piece of code too many.
 
-In Clawr, values travel through your program with well-defined _semantics_—`let`, `mut`, and `ref`—and Rawry makes sure you can always trust the promises made by these keywords:
+In Clawr, values travel through your program with well-defined _semantics_—`const`, `mut`, and `ref`—and Rawry makes sure you can always trust the promises made by these keywords:
 
-- `let`: “This is a ‘constant,’ a named value that can never change”
+- `const`: “This is a ‘constant,’ a named value that can never change”
 - `mut`: “This is my ‘container’ that only I can manipulate”
 - `ref`: “This is a reference to a shared structure that can I and others can manipulate”
 
@@ -29,14 +29,14 @@ Let’s imagine this simple data structure:
 classDiagram
 class Composite {
   [mut] x: X
-  [let] y: Y
+  [const] y: Y
   [ref] z: Z
 }
 ```
 At some point two variables were assigned the same data:
 
 ```clawr
-let a: Composite = { x: {...}, y: {...}, z: {...} }
+const a: Composite = { x: {...}, y: {...}, z: {...} }
 mut b = a
 ```
 
@@ -46,7 +46,7 @@ In memory, however, actually replicating structures is expensive, so as long as 
 
 ```mermaid
 flowchart
-a([let a]) --> ab_mem
+a([const a]) --> ab_mem
 b([mut b]) --> ab_mem
 
 ab_mem["`semantics = ISOLATED
@@ -99,7 +99,7 @@ This ensures that your change affects **only your variable** and not anyone else
 Here is the mutation path highlighted:
 ```mermaid
 flowchart
-a([let a]) --> ab_mem
+a([const a]) --> ab_mem
 b([mut b]) --> ab_mem
 
 ab_mem["`semantics = ISOLATED
@@ -157,7 +157,7 @@ Meanwhile, the other variables (only `a` in the example) that referenced the ori
 
 ```mermaid
 flowchart
-a([let a]) --> a_mem
+a([const a]) --> a_mem
 b([mut b]) --> b_mem
 
 a_mem["`semantics = ISOLATED
@@ -219,7 +219,7 @@ So he repeats. Now the clones this field:
 
 ```mermaid
 flowchart
-a([let a]) --> a_mem
+a([const a]) --> a_mem
 b([mut b]) --> b_mem
 
 a_mem["`semantics = ISOLATED
@@ -331,16 +331,16 @@ A `mut` variable is like a drawer or a box. You can reach inside the drawer and 
 
 This is *isolation semantics* (a.k.a. “copy semantics” or “value semantics”). The `mut` keyword is analogous to `struct` in languages like C# and Swift—where the semantics model is defined by the type.
 
-### `let` variable: A Named Value or a Definition
+### `const` variable: A Named Value or a Definition
 
-A `let` variable is essentially an assigned name for a particular value—what we might call a “*constant*.” The value can be a number (like $π$ or the integer 6) or a more complex structure (like GPS coordinates or the current configuration of your program). We could also say that we *define* the constant when we assign a value to it. Once defined, the constant is fixed.
+A `const` variable is essentially an assigned name for a particular value—what we might call a “*constant*.” The value can be a number (like $π$ or the integer 6) or a more complex structure (like GPS coordinates or the current configuration of your program). We could also say that we *define* the constant when we assign a value to it. Once defined, the constant is fixed.
 
-A value cannot change and still remain the same value. Similarly, a `let` variable is immutable and can only refer to its initial contents. Even if the named value is a large data structure—with arbitrarily many layers of nested structures—the variable itself is locked to the initial combination of field values. Even the tiniest change to that structure would construct a new value and the variable could not refer to that and still be considered constant.
+A value cannot change and still remain the same value. Similarly, a `const` variable is immutable and can only refer to its initial contents. Even if the named value is a large data structure—with arbitrarily many layers of nested structures—the variable itself is locked to the initial combination of field values. Even the tiniest change to that structure would construct a new value and the variable could not refer to that and still be considered constant.
 
-The `let` keyword is analogous to `let` variables with `struct` types in Swift.
+The `const` keyword is analogous to `let` variables with `struct` types in Swift.
 
 ### Crossing the Boundary Requires Explicitly Copying
 
-`let` and `mut` variables make the same promise: that they will remain isolated from changes to any other variable (even if they share memory). The only difference is at compile-time, where the compiler disallows any mutating action to `let` variables. This is why `let` and `mut` variables can be freely assigned to each other. They both have copy-on-write semantics and their isolation is enforced implicitly.
+`const` and `mut` variables make the same promise: that they will remain isolated from changes to any other variable (even if they share memory). The only difference is at compile-time, where the compiler disallows any mutating action to `const` variables. This is why `const` and `mut` variables can be freely assigned to each other. They both have copy-on-write semantics and their isolation is enforced implicitly.
 
-`ref` variables, however, have diametrically opposed semantics. They make the opposite promise—that all changes *should* be seen by all. Assigning `ref` variables to `let` or `mut`—or vice versa—is therefore forbidden unless an explicit `copy` operation is performed.
+`ref` variables, however, have diametrically opposed semantics. They make the opposite promise—that all changes *should* be seen by all. Assigning `ref` variables to `const` or `mut`—or vice versa—is therefore forbidden unless an explicit `copy` operation is performed.

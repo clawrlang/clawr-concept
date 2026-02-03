@@ -16,7 +16,7 @@ If there are multiple other variables that refer to `x` (and they are not descop
 object Entity {
 
   // These first methods are non-mutating, so they will never trigger
-  // copy-on-write, and they can be called from `let` variables.
+  // copy-on-write, and they can be called from `const` variables.
 
   func id() => .id
   func reconstitutedVersion() => .version
@@ -66,7 +66,7 @@ inheritance:
 
 mutating:
 
-  // These methods are mutating and unavailable to `let` variables.
+  // These methods are mutating and unavailable to `const` variables.
   // They will trigger copy-on-write before being executed.
 
   func add(event: UnpublishedEvent) { unpublishedEvents.add(event) }
@@ -74,8 +74,8 @@ mutating:
 
 data:
 
-  let id: EntityId
-  let version: EntityVersion
+  const id: EntityId
+  const version: EntityVersion
   mut unpublishedEvents: [UnpublishedEvent]
 }
 ```
@@ -127,7 +127,7 @@ namespace Student {
         
     // This variable would add one to the reference count
     // But that is decremented again when the function exits
-    // let otherRef = student // Allowed
+    // const otherRef = student // Allowed
 
     // This variable is incompatible with the semantics of `student`
     // ref sharedSelf = student // Not allowed.
@@ -140,21 +140,21 @@ namespace Student {
   }
 }
 
-let student1 = Student.new("Emil")
+const student1 = Student.new("Emil")
 ref student2 = Student.new("Emilia")
 ```
 
 ## Rules
 
 1. `ISOLATED` memory may not be assigned to `ref` variables. `copy()` is required.
-2. `SHARED` memory may not be assigned to `let` / `mut` variables. `copy()` is required.
+2. `SHARED` memory may not be assigned to `const` / `mut` variables. `copy()` is required.
 3. `SHARED` memory returned from a function must be announced.
 4. `ISOLATED` memory (returned from a function) can be reassigned `SHARED` if `refs == 1`.
 5. If a function cannot prove that the value is always uniquely referenced, it must announce that its semantics are fixed.
 
 ```clawr
 func returnsRef() -> ref Student // SHARED memory
-func returnsCOW() -> let Student // ISOLATED memory
+func returnsCOW() -> const Student // ISOLATED memory
 func returnsUnique() -> Student  // uniquely referenced, reassignable
 ```
 

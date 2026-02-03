@@ -15,7 +15,7 @@ A variable that is constrained to a small range can be stored in a small number 
 ```clawr
 mut x: integer @range(0..100) // fits in 7 bits or 5 trits
 mut y = x // unconstrained integer
-let A = 5 // implicit integer @value(5) - ultimately constrained
+const A = 5 // implicit integer @value(5) - ultimately constrained
 ```
 
 The compiler should choose the smallest representation possible to fit each variable. If no constraint is specified (or inferred), the compiler has no choice but use the arbitrarily sized “big integer” type, but with a known constraint, it can store values more compactly.
@@ -484,7 +484,7 @@ The compiler can be conservative but smart:
 # Conservative default
 fn compile_expression(expr: Expr, expected_range: Range) -> Code {
     // 1. Calculate worst-case range for expr
-    let expr_range = analyze_range(expr);
+    const expr_range = analyze_range(expr);
     
     // 2. Check if fits in target's register
     if expr_range.fits_in_register(target) {
