@@ -73,7 +73,7 @@ companion Money {
 
 An `object` is just an encapsulated `data` structure. In some cases, however, we might want to access and modify system-wide data such as on-device sensors, a database or the Internet. This is where the `service` type comes in.
 
-A `service` is similar to an `object`. It is defined by its interface and its behavioural capabilities, not by uts composition. While it can (and probably will) have an internal `data` structure to perhaps maintain a cache or other state information, its main source of data comes from external resources far away from its own memory address.
+A `service` is similar to an `object`. It is defined by its interface and its behavioural capabilities, not by its composition. While it can (and probably will) have an internal `data` structure to perhaps maintain a cache or other state information, its main source of data comes from external resources far away from its own memory address.
 
 ```clawr
 service UserRepository {
@@ -81,7 +81,7 @@ service UserRepository {
         // Fetch user from database or external subsystem
     }
 
-    mutating:
+mutating:
     func updateUser(_ user: User) {
         // Update user in database or external subsystem
     }
@@ -93,12 +93,23 @@ As it’s data is defined externally, making isolated copies of it’s memory wi
 
 ## Visibility and Headers
 
-I have not considered visibility modifiers. All methods are public and all fields internal to the `object` according to the current conception. An early idea, however, was to support header files. A published header file could declare “public” APIs, while a private header could declare “package-internal” code. Code that is “private” would only be declared in the implementation-file.
+An early idea was to support header files. A published header file could declare “public” APIs, while a private header could declare “package-internal” code. Code that is “private” would only be declared in the implementation-file.
 
 Headers are, however, rather complex to use. That might be the main problem with this idea.
 
+My current idea is to use a `helper` keyword:
+
+- All `object` and `service` fields are hidden and all `data` fields are public. That cannot change.
+- All methods of an object are public unless marked `helper`. A `helper` method can only be used by other methods of the same `object` (or by factories defined in the same module).
+- Free functions are publicly available. If marked `helper` they cannot be accessed outside their package/target.
+- Types are publicly available. If marked `helper` they cannot be accessed outside their package/target.
+
 ## Proof of Concept
 
-There is a [proof of concept repository](https://github.com/clawrlang/clawr-poc) that implements a compiler and runtime for Clawr, demonstrating a syntax for `object` and `data`, and exploring a (rudimentary) runtime implementation of polymorphism (via a `trait` keyword).
+There are a few proof of concept compilers for Clawr, demonstrating syntax and exploring runtime implementations.
 
-It also implements the other big language idea of Clawr: a [variable-driven semantics model](variable-scope.md)
+- <https://github.com/clawrlang/clawr-poc> — Early exploration into syntax *and* runtime
+- <https://github.com/clawrlang/clawr-swift-parsing> — Focus on syntax, not runtime
+- <https://github.com/clawrlang/clawr-runtime> — Focus on runtime, not syntax
+
+They also demonstrate the other big language idea of Clawr: a [variable-driven semantics model](../semantics/variable-scope.md).
