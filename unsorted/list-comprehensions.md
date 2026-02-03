@@ -4,22 +4,32 @@ Several languages use a syntax called a list comprehension. It allows safe filte
 
 ## Cartesian Product
 
-The cartesian product of two lists is defined as every possible combination of taking one element from each list. For example, the cartesian product of `[1, 2, 3]` and `[4, 5]` is `[(1, 4), (1, 5), (2, 4), (2, 5), (3, 4), (3, 5)]`. When this is done, the output is often not just tuples/pairs; instead the components are fed into a function, f, yielding `[f(1, 4), f(1, 5), f(2, 4), f(2, 5), f(3, 4), f(3, 5)]` in the example case.
+The cartesian product of two lists is defined as every possible combination of taking one element from each list. For example, the cartesian product of `[1, 2, 3]` and `[4, 5]` is `[(1, 4), (1, 5), (2, 4), (2, 5), (3, 4), (3, 5)]`:
+
+|     | 1        | 2        | 3        |
+| --- | -------- | -------- | -------- |
+| 4   | `(1, 4)` | `(2, 4)` | `(3, 4)` |
+| 5   | `(1, 5)` | `(2, 5)` | `(3, 5)` |
+
+The output is often not just tuples/pairs; instead the components are fed into a function, let’s say `f`, yielding `[f(1, 4), f(1, 5), f(2, 4), f(2, 5), f(3, 4), f(3, 5)]` in the example case.
+
+|     | 1         | 2         | 3         |
+| --- | --------- | --------- | --------- |
+| 4   | `f(1, 4)` | `f(2, 4)` | `f(3, 4)` |
+| 5   | `f(1, 5)` | `f(2, 5)` | `f(3, 5)` |
 
 In Clawr, we write the cartesian product like this:
 
 ```clawr
+func f(x: integer, y: integer) => x + y
+
 let xs = [1, 2, 3]
 let ys = [4, 5]
 
-let c_product = {
-  x + y // f
-: x <- xs,
-  y <- ys
-}.all()
+let c_product = { f(x, y) : x <- xs, y <- ys }.all()
 ```
 
-The first line is the function (`f`) used to combine the paired collection members in the output. We could use `(x, y)` to simply return pairs, but in this example we add `x + y` to return the sequence `[1 + 4, 1 + 5, 2 + 4, 2 + 5, 3 + 4, 3 + 5]`.
+The first part is the function (`f`) used to combine the paired collection members in the output. We could use `(x, y)` to simply return pairs, but in this example we add `x + y` to return the sequence `[1 + 4, 1 + 5, 2 + 4, 2 + 5, 3 + 4, 3 + 5] = [5, 6, 6, 7, 7, 8]`.
 
 A list cartesian product is a generator. It does not automatically create a collection. Instead you have to explicitly state which items to collect. `Generator.all()` collects all yielded elements as an array.
 

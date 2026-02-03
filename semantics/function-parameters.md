@@ -4,25 +4,25 @@
 
 Note: `mut` does not mean move ownership as `&mut` in Rust. Instead it means that value semantics (copy-on-write) applies to the variable.
 
-Parameters have one extra semantics keyword that ordinary variable cannot use.
+Parameters have one extra semantics mode that ordinary variables cannot use:
 
-- **`in`** (default): Read-only access
-    - Accepts: `let`, `mut`, `ref` variables (or “unique” return values)
-    - Does not copy implicitly
-    - Cannot modify inside function
-    - Shares reference safely
+- (default): Read-only access
+    - Accepts: any variables regardless semantics
+    - No copy created
+    - Cannot be modified by the function
+    - Could be modified by other thread if parallel execution is enabled
 - **`let`**: Immutable isolated access
-    - Accepts: `let` or `mut` variables (or “unique” return values)
-    - Does not copy implicitly (shares reference, increments refs)
-    - Cannot be modified in the function body
+    - Semantically similar to the default, but cannot be affected by parallel mutation
+    - Accepts: `let` or `mut` variables (and unassigned return values) but not `ref`
+    - No copy created
+    - Cannot be modified by the function
     - Value is immutable within function scope
 - **`mut`**: Mutable isolated access
 	- Semantically equivalent to `let`, but allows mutation in the function body
-    - Accepts: `let` or `mut` variables (or “unique” return values)
-    - Does not copy unnecessarily (COW applies)
+    - Accepts: `let` or `mut` variables (and unassigned return values) but not `ref`
+    - Copies if mutating and high ref-count (CoW)
     - Reference count incremented on call
     - Value is mutable within function scope
-    - Modifications trigger COW if refs > 1
     - Changes not visible to caller (isolated)
 - **`ref`**: Shared mutable access
     - Accepts: `ref` variables only
@@ -206,3 +206,7 @@ func getter(obj: ref Container) -> ref Widget {  // Returns SHARED
   return obj.widget
 }
 ```
+
+> [!neutral]
+> Testing
+

@@ -1,174 +1,43 @@
-# Return Values are *Moved*
+# Variable Semantics for Function Return Values
 
-Functions return “unique” values by default. Unique values can be assigned reference semantics *or* copy semantics as needed. The first variable it is assigned to will determine the semantics for the allocated memory. After that if cannot be reassigned to a conflicting semantics variable without explicitly copying.
+Functions can return memory they just allocated, memory that they receive from somewhere else, or memory stored as a field. That memory could have `ISOLATED` or `SHARED` semantics. But functions should be reusable whether the caller assigns the result to a `let` or a `ref` variable. To resolve this, Clawr uses *uniquely referenced values* where possible.
 
-When a function returns a value, that memory is “moved.” That means that if the function does `return x` it will not `release(x)` (but it will release all other variables in its scope). The receiving variable will not call `retain()` on the returned value, but will just take over the reference from `x`.
+## Uniquely Referenced Values
 
-If there are multiple other variables that refer to `x` (and they are not descoped), the value cannot be returned as “unique.” So the semantics must be explicit in the function signature and the receiver will have to `copy()` the value if the receiver semantics doesn't match.
+Functions return “uniquely referenced” values by default. A uniquely referenced value is an `ISOLATED` memory block that has a reference count of exactly one. It is assumed that the value will be assigned to a variable, which is is already counted. If it is not, it must be released (and deallocated) by the caller.
 
-## Factories are not Special
+A uniquely referenced value can be reassigned new semantics. If the caller assigns the value to a `let` or `mut` variable, the memory is awarded `ISOLATED` semantics. If it is assigned to a `ref` variable, it is given `SHARED` semantics. Once the value has been assigned, the semantics is locked until it is deallocated (unless it is returned again as a uniquely referenced value).
 
-They are not a special case. From the client’s perspective they are just `static` methods that return unique structures and called the exact same way.
+Uniquely referenced values will always be `ISOLATED`. This is a consequence of the fact that `SHARED` values will always have multiple references. If, for example, you return the value of a `ref` field, that field will hold one reference, and for the caller to be able to hold a reference, the count must be at least two.
 
-Without inheritance, factories could be removed entirely and replaced with `companion` methods and `data` literals (`{ field: value }`). This might be supported anyway. The default for an `object` could be `final` / `sealed`, and if you want to support inheritance you need to get explicit about it.
+## Uniquely Referenced Return Values are *Moved*
 
-The implementation, however is different: Calling a factory method allocates memory for the entire type (with inherited fields). Then the function is called to allocate those fields and maybe call secondary setup methods after the .
+Reference-counted values will be deallocated as soon as the counter reaches zero. Therefore, it is impossible for the called function to count down *all* its references and then return the value. It must leave a reference count of one (even though it technically holds zero references). That means that the caller must adjust *its* behaviour accordingly. It just takes over the reference without counting up. If it does not store the value (for example if it just passes it to another function, or uses it for computation etc) it must call `releaseRC()` so that the memory does not leak.
 
-## Example — Inheritance
+When a function returns an `ISOLATED` value, that memory is “moved.” That means that if the function does `return x` it will not call `releaseRC(x)` (but it will call `releaseRC()` for all other variables in its scope). The receiving variable will not call `retainRC()` on the returned value, but will just take over the reference from from the called function.
 
-```clawr
-// “Open” and “abstract” objects allow inheritance. They must define
-// initializers for inheriting objects to invoke at construction.
+In other words, returned values must have a reference count of exactly one. We call this a “unique reference.” If it is unclear at compile-time, whether the memory could have multiple references, the compiler could inject a `mutateRC()` call. This function creates a copy of the memory if it has a high reference count, and always returns a memory block with a reference count of one.
 
-abstract object Entity {
+Alternatively, we could make the return type `let Value`, meaning that the value har explicit `ISOLATED` semantics and can only be assigned to a `let` or `mut` variable.
 
-  // These first methods are non-mutating, so they will never trigger
-  // copy-on-write, and they can be called from `let` variables.
+## Semantics Rules
 
-  func id() => .id
-  func reconstitutedVersion() => .version
-  func unpublishedEvents() => copy .unpublishedEvents
-
-  // Initializers also do not trigger copy-on-write because the
-  // reference count is always 1 when they are called.
-
-  init new(id: EntityId) => { id: id, version: .new }
-
-  init reconstitute(_ id: Entityid, version: EntityVersion, replaying events: [PublishedEvent]) {
-
-    // This method has post-initialization code. All the fields must
-    // be initialized before that is allowed. That is done by assigning
-    // a literal to the special variable `self`.
-    self = { id: id, version: version }
-
-    // NOTE: Assigning to `self` does not allocate a new instance. The
-    // encapsulated `data` has already been allocated in memory before
-    // the factory-method starts executing. The literal assigned to `self`
-    // represents the initialization of that `data`, and it needs to define
-    // all the fields before it can run post-initialization code. 
-
-    // NOTE: The semantics of `self` (copy or reference) is irrelevant
-    // during setup. The reference count will always be one until the
-    // initialiser returns. And then the allocated memory will be “moved”
-    // to the receiving variable.
-
-    // `self` is assumed to be completely set up after the literal
-    // assignment. It should be safe to call methods. That means that
-    // all sub-type fields must also have been initialized before calling
-    // this factory method.
-    for event in events {
-      // Call methods on the sub-type to restore state information
-      // corresponding to the events.
-      // Calling mutating methods from this context is safe as
-      // the object will not have multiple referents.
-      replay(event: event)
-    }
-  }
-
-mutating:
-
-  // These methods are mutating and unavailable to `let` variables.
-  // They will trigger copy-on-write before being executed.
-
-  func add(event: UnpublishedEvent) { unpublishedEvents.add(event) }
-  func abstract replay(event: PublishedEvent)
-
-data:
-
-  let id: EntityId
-  let version: EntityVersion
-  mut unpublishedEvents: [UnpublishedEvent]
-}
-```
-
-### Subclassing
-
-```clawr
-object Student: Entity {
-
-  func name() => name
-  func isEnrolled(in course: Course) => enrolledCourses.contains(course)
-
-mutating:
-
-  func enroll(course: Course) {
-    add(event(for: course))
-  }
-  
-  override func replay(event: PublishedEvent) { ... }
-
-data:
-
-  name: string
-  enrolledCourses: Set<Course> = []
-}
-
-companion Student {
-
-  // As `Student` is implicitly sealed it does not need `init` methods.
-  // Instead, it can define “constructors” as ordinary functions.
-
-  func reconstitute(id: EntityId, version: EntityVersion, replaying events: [Event]) => {
-    super.reconstitute(id, version: version)
-    name: name
-  }
-
-  // Return type is Student without decoration. It must return a “unique”
-  // instance that is safe to assign semantics that fits the receiver
-  func new(id: EntityId, name: string) -> Student {
-  // All the fields will be assigned first. Then the super factory method
-  // will be called and set up the fields of the super-type. And that in
-  // turn will call back to methods on this type.
-
-  // This value will be ISOLATED. Cannot be assigned to a ref variable.
-  mut student = {
-    super.new(id: id)
-      name: name
-    }
-        
-    // This variable would add one to the reference count
-    // But that is decremented again when the function exits
-    // let otherRef = student // Allowed
-
-    // This variable is incompatible with the semantics of `student`
-    // ref sharedSelf = student // Not allowed.
-
-    student.add(event(for: course))
-
-    // When returned, `student` becomes a *unique* instance and its
-    // semantics can be changed to match the caller.
-    return student
-  }
-}
-
-let student1 = Student.new("Emil")
-ref student2 = Student.new("Emilia")
-```
-
-## Rules
-
-1. `ISOLATED` memory may not be assigned to `ref` variables. `copy()` is required.
-2. `SHARED` memory may not be assigned to `let` / `mut` variables. `copy()` is required.
-3. `SHARED` memory returned from a function must be announced.
+1. `ISOLATED` memory may not be assigned to `ref` variables. Explicit `copy()` is required.
+2. `SHARED` memory may not be assigned to `let` / `mut` variables. Explicit `copy()` is required.
+3. `SHARED` memory returned from a function modifies its return type, `-> ref Value`.
 4. `ISOLATED` memory (returned from a function) can be reassigned `SHARED` if `refs == 1`.
-5. If a function cannot prove that the value is always uniquely referenced, it must announce that its semantics are fixed.
+5. `ISOLATED` memory with a (possible) high ref count makes the return type `let Value`.
+6. If a function cannot prove that the value is always uniquely referenced, it must announce that its semantics are fixed.
+7. The compile could inject `mutateRC(returnValue)` to ensure that it is uniquely referenced. Thought this might mean unnecessary copying.
 
 ```clawr
 func returnsRef() -> ref Student // SHARED memory
-func returnsCOW() -> let Student // ISOLATED memory
+func returnsCOW() -> let Student // ISOLATED memory with multiple refs
 func returnsUnique() -> Student  // uniquely referenced, reassignable
 ```
 
-## Default Constructors
+## Constructors
 
-Most OO languages allow classes with implicit, no-argument, constructors. This does not exist in Clawr. You will always have to define a public-facing method/initialiser for clients to invoke. It needs to have a name to refer to, just `TypeName()` is not a syntactically valid initialisation. (It would be interpreted as a function call, not a constructor invocation.)
+Clawr does not have constructors like other OO languages, but does have `data` literals and factory functions.
 
-An `abstract` type, however, is never instantiated directly. It doesn't need to expose a method for construction as long as its “concrete” inheritors do. And those inheritors do not necessarily need to invoke an explicit `super` function; they can just return a literal defining field values.
-
-If the abstract type does not have any fields (or all its fields have default values) it might be okay not to define an explicit initialiser for it.
-
-## Destructors
-
-No `object` type will ever need a destructor. They are not allowed to touch the world outside their own memory allocation. There is nothing to clean up beyond `free(self)`.
-
-A `service` might need a destructor. It might e.g. represent a file handle that needs to be closed.
+A factory is just a free function (probably in a namespace with the same name as the type) that creates an `ISOLATED`, uniquely referenced, memory block. This is then assigned as needed to a `ref`, `mut` or `let` variable according to the rules above.
