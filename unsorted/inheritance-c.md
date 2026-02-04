@@ -1,40 +1,62 @@
+```clawr
+object Super {
+    func value() => self.value
+    init new(value: integer) => { value: value }
+    mutating: func setValue(_ value: integer) { self.value = value }
+    data: value: integer
+}
+
+object Object: Super {
+    func objectValue() => self.value
+mutating:
+    func setObjectValue(value: integer) { self.value = value }
+data:
+    value: integer
+}
+
+namespace Object {
+    func new(value: integer) => Object {
+        Super.new(value: value)
+        value: value
+    }
+}
+```
+
 ```c
 #include "clawr-stdlib.h"
 #include "clawr-runtime.h"
 
 /// This is an illustration of how inheritance might be implemented in C
 
-// object abstract Super {
-//     func value() => self.value
-//     init new(value: integer) => { value: value }
-//     mutating: func setValue(_ value: integer) { self.value = value }
+// object Super {
 //     data: value: integer
 // }
-
-// data: value: integer
 typedef struct {
     __clawr_rc_header header;
     integer value;
 } Super;
+
 typedef struct {
-// func setValue(_ value: integer)
+
+	// func setValue(_ value: integer)
     void (*setValue)(Super*, integer);
-// func value() -> integer
+
+	// func value() -> integer
     integer (*value)(Super*);
 } __Super_vtable;
 
 // init: func new(value: integer) => { value: value }
 void Super_new_value(Super* self, integer value) {
-    self->Super.value = value;
+    self->value = value;
 }
 
 // func setValue(_ value: integer) { self.value = value }
 void Super_setValue(Super* self, integer value) {
-    self->Super.value = value;
+    self->value = value;
 }
 //  func value() => self.value
 integer Super_value(Super* self) {
-    return self->Super.value;
+    return self->value;
 }
 __Super_vtable super_vtable = {
     .setValue = Super_setValue,
@@ -65,29 +87,32 @@ __clawr_type_info __Super_info = { .object = &__Super_object_type };
 // data: value: integer
 typedef struct {
     __clawr_rc_header header;
-    byte [sizeof(Super) - sizeof(__clawr_rc_header)] __offset__;
+    int8_t __offset__[sizeof(Super) - sizeof(__clawr_rc_header)];
     integer value;
 } Object;
 
-// companion: func new(value: integer) -> Object => {
-//     super.new(value: value)
-//     value: value
-// }
-void Object_companion_new_value(integer value) {
+// func Object.new(value: integer) -> Object
+Object* Object_companion_new_value(integer value) {
     Object* self = allocRC(__Object_info, __clawr_ISOLATED);
+
+    // {
+    //     super.new(value: value)
+    //     value: value
+    // }
     self->value = value;
     Super_new_value((Super*)self, value);
-    
+
     // Returned with refs = 1 (“moved” to receiver)
+    return self;
 }
 
 // mutating: func setObjectValue(value: integer) { self.value = value }
 void Object_setObjectValue(Object* self, integer value) {
-    self->Object.value = value;
+    self->value = value;
 }
 // func objectValue() => self.value
 integer Object_objectValue(Object* self) {
-    return self->Object.value;
+    return self->value;
 }
 
 __clawr_object_type __Object_object_type = {
@@ -100,7 +125,7 @@ __clawr_type_info __Object_info = { .object = &__Object_object_type };
 int main() {
 
     // mut x = Object.new(value: 42)
-    Object* x = Object_companion_new_value(x, 42);
+    Object* x = Object_companion_new_value(42);
 
     // mut y = x
     Object* y = retainRC(x);
@@ -114,22 +139,22 @@ int main() {
     Object_setObjectValue(x, 12);
 
     // print y.objectValue()
-    box* box1 = __clawr_make_box(Object_objectValue(y), __integer_box_info);
+    box* box1 = __clawr_make_box(Object_objectValue(y), &__integer_box_info);
     print(box1);
     box1 = releaseRC(box1);
 
     // print y.value()
-    box* box2 = __clawr_make_box(((__Super_vtable*)y->header.is_a.object->vtable)->value(y), __integer_box_info);
+    box* box2 = __clawr_make_box(((__Super_vtable*)y->header.is_a.object->vtable)->value(y), &__integer_box_info);
     print(box2);
     box2 = releaseRC(box2);
 
     // print x.objectValue()
-    box* box3 = __clawr_make_box(Object_objectValue(x), __integer_box_info);
+    box* box3 = __clawr_make_box(Object_objectValue(x), &__integer_box_info);
     print(box3);
     box3 = releaseRC(box3);
 
     // print x.value()
-    box* box4 = __clawr_make_box(((__Super_vtable*)x->header.is_a.object->vtable)->value(x), __integer_box_info);
+    box* box4 = __clawr_make_box(((__Super_vtable*)x->header.is_a.object->vtable)->value(x), &__integer_box_info);
     print(box4);
     box4 = releaseRC(box4);
 
