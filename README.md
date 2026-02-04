@@ -1,6 +1,6 @@
 # Clawr: Coding with Roaring Clarity
 
-![Rawrderick the Lion](../images/rawry.png)
+![Rawrderick the Lion](./images/rawry.png)
 
 This repository exists to collect ideas and concepts for Clawr, a programming language designed to help you express your ideas clearly so others (and your future self) can understand them.
 
