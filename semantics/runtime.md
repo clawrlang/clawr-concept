@@ -1,6 +1,6 @@
 # C Runtime
 
-Here is a working runtime implementation. It is used in the [proof of concept repository](https://github.com/clawrlang/clawr-poc). It is incomplete, because it does not support inheritance or weak references. But the existing functionality has been tested.
+Here is a working runtime implementation. It is used in the first [proof of concept repository](https://github.com/clawrlang/clawr-poc). It is incomplete, because it does not support inheritance or weak references. But the existing functionality has been tested. For a more worked implementation, check out the [Runtime Repository](https://github.com/clawrlang/clawr-runtime).
 
 ```c
 #ifndef CLAWR_RUNTIME_H

@@ -1,6 +1,6 @@
 # Clawr: Coding with Roaring Clarity
 
-![Clawr's unnamed mascot–a roaring lion with an eye-patch](./images/rawry.png)
+![Rawrderick the Lion](../images/rawry.png)
 
 This repository exists to collect ideas and concepts for Clawr, a programming language designed to help you express your ideas clearly so others (and your future self) can understand them.
 
@@ -41,8 +41,8 @@ A roaring lion may not be as obvious as a screeching monkey, but it might be mor
 
 Here are some of the big ideas that Clawr is exploring:
 
-- [Variable Scope and Semantics](./semantics/variable-scope.md): Enforcing clear variable semantics to avoid unintended shared state and side effects.
-- [Object vs Data Segregation](types/object-data.md): Enforcing encapsulation for objects in business applications, while allowing pure, exposed data structures for big-data analysis.
+- [Variable Scope and Semantics](./semantics/README.md): Enforcing clear variable semantics to avoid unintended shared state and side effects.
+- [Object vs Data Segregation](types/README.md): Enforcing encapsulation for objects in business applications, while allowing pure, exposed data structures for big-data analysis.
 
 ## Get Started
 
