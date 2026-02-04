@@ -118,6 +118,7 @@ Just like a `struct` in languages like C# and Swift can contain fields that refe
 When dealing with `mut` variables, a `ref` field becomes like a hand inside a drawer. That mental image may be somewhat disturbing; in this case it might be better to think of it as a web-link. It can still refer to an entity shared with other variables. That shared entity is not inside the drawer; only the link is. Therefore, it might still be manipulated in unexpected ways from the `mut` variable’s perspective.
 
 > [!tip]
+> 
 > Prefer `mut` and `const` fields when possible. Fields without explicit semantics default to `mut`.
 > 
 > Neither `mut` nor `const` fields in a `ref` variable can ever cause a problem. The issue only occurs in one direction.
