@@ -4,7 +4,7 @@
 
 Clawr is not like other languages. It focuses on modelling and intent rather than the technical ins and outs of a processor, registers and memory handling. One of the ways Clawr is different is how it thinks of types and variables.
 
-Clawr has two kinds of complex types: `object` and `data`. The `data` structure type is just more of what we have already seen, multiple smaller datatypes aggregated into a larger structure. The `object` type is an *encapsulated* `data` structure, a data structure hidden behind a conceptually, meaningful interface.
+Clawr has two kinds of complex types: `object` and `data`. The `data` structure type is just more of what we have already seen, multiple smaller datatypes aggregated into a larger structure. The `object` type is an *encapsulated* `data` structure, a data structure hidden behind a conceptually meaningful interface.
 
 Let’s focus on the `data` structure first. You use `data` structures when you want to perform **computations** on complex or plentiful *data*.
 
@@ -50,7 +50,7 @@ print(averageCost(of: purchases))
 >
 > There is a lot happening here. First of all, we have defined out own *functions*. Much like the `print` function from earlier, every function is a named procedure that might define parameters—inputs that affect its execution in some way.
 > 
-> These functions are outwardly similar. They both have a single parameter, which is an `Array` (a kind of list) of `Purchase` elements. They both define a `real` *return value*. How they compute the result is different though. One sums all the values together and returns that sum. The other also counts the number of items and calculates the average but dividing the total with the count.
+> These functions are outwardly similar. They both have a single parameter, which is an `Array` (a kind of list) of `Purchase` elements. They both define a `real` *return value*. How they compute the result is different though. One sums all the values together and returns that sum. The other also counts the number of items and calculates the average by dividing the total with the count.
 >
 > The `for in` syntax is similar to the `while` loop we saw in the previous chapter. `for in` goes through the elements of a collection and performs the block once for each element. The `p` variable in this example holds a reference to that element.
 
@@ -84,9 +84,11 @@ companion Money {
 >
 > In this case, you can create a money `object` representing $1.50 in three different ways: `Money.amount(1.5)`, `Money.cents(150)` or `Money.dollars(1, cents: 50)`. All three expressions represent the same amount, and they all result in equal `Money` objects.
 
-The `cents: integer` field defines how the value is actually stored in memory. It is irrelevant when interacting with the object, but is is essential to its implementation. All methods defined by the `Money` type will be able to interact directly with the underlying `data`, but all other code has to interact through the exposed methods. They will have no idea that the value is stored as a single `integer` and not a `real`, or two as values separating cents from dollars.
+The `cents: integer` field defines how the value is actually stored in memory. It is irrelevant when interacting with the object, but is is essential to its implementation. All methods defined by the `Money` type will be able to interact directly with the underlying `data`, but all other code has to interact through the exposed methods. They will have no idea that the value is stored as a single `integer` and not as a `real` number, nor as two `integer` values separating cents from dollars.
 
-If you have done any object-oriented programming before, you have probably been told to write getters and setters to avoid “exposing your privates.” Getters and setters are not a good design. They are essentially a workaround to pretend that you are “doing encapsulation” when you really don’t. Proper encapsulation happens when you design your objects from the outside in. When you do not design the data first, but the interface. When you start with the *meaning* of the object, and how that is perceived by other code, not its implementation.
+If you have done any object-oriented programming before, you have probably been told to write getters and setters to avoid “exposing your privates.” Getters and setters are not a good design. They are essentially a workaround to pretend that you are “doing encapsulation” when you really don’t. Adding getters and setters is a good first step when *refactoring* from a exposed `data` structure to an encapsulated `object`, but you should not stop there. You should rethink the interface and continue refactoring to something more meaningful.
+
+True encapsulation happens when you design your objects from the outside in. When you do not design the data first, but the interface. When you start with the *meaning* of the object, and how that is perceived by other code, not with composition and implementation details.
 
 ## Mutable and Immutable Objects
 
