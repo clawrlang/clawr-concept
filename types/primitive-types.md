@@ -8,7 +8,9 @@ Every language needs primitive types. Here is a proposed set for Clawr:
 - `decimal`: a base-10 floating-point value of unspecified precision.
 - `boolean`: a value of `true` or `false`
 - `ternary`: an truth-value with three states (`negative`, `unset` and `positive`)
-- `character`: this could be simple as in C or more complex as in Swift
+- `bitfield`: a binary blob of anonymised data (each bit is conceptually a `boolean`)
+- `tritfield`: the ternary analogue to bitfield (where each trit is a `ternary` value)
+- `character`: a value that represents any valid (printable) character glyph. It could be simple as in C or more complex as in Swift
 - `string`: a fixed list or sequence of characters
 - `regex`: a regular expression/pattern for string matching
 - `error`: a type for indicating issues at runtime

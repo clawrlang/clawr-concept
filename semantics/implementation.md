@@ -1,9 +1,9 @@
 # Variable Semantics Implementation Example
 
 > [!warning]
-> This should be a close match to the implementation tested in the [PoC repository](https://github.com/clawrlang/clawr-poc). Note that mistakes can happen, and implementations can change, so discrepancies are very much possible.
+> This should be a close match to the implementation tested in the [Runtime repository](https://github.com/clawrlang/clawr-runtime). Note that mistakes can happen, and implementations can change, so discrepancies are very much possible.
 >
-> Please consult the PoC repository directly it you are interested in what is *actually* known to work.
+> Please consult the repository directly it you are interested in what is *actually* known to work.
 
 There are two kinds of memory structures in Clawr: `ISOLATED` and `SHARED`.
 
@@ -210,7 +210,7 @@ The implementation is much like Pepparholm, the artificial island that was creat
 
 The `weak` reference implementation also uses a stepping-stone that requires passing through a second junction (pointer) to get to the true destination.
 
-Every `object` and `struct` contains an optional `__clawr_weak_island` structure. [^side-table] This structure contains a pointer back to the main structure, and a reference-counter that tracks the `weak` references to the object in memory. This establishes a reference cycle, but this cycle is safe because it is kept under strict control.
+Every `object` and `struct` contains an optional `__rc_proxy` structure. [^side-table] This structure contains a pointer back to the main structure, and a reference-counter that tracks the `weak` references to the object in memory. This establishes a reference cycle, but this cycle is safe because it is kept under strict control.
 
 [^side-table]: Swift and the AIs call this a “side table,” but it’s not a table. It is essentially Pepparholm: a tiny structure/manufactured island, where the bridge from Malmö ends before it connects through another link (the tunnel) to the real destination: Copenhagen, Denmark.
 
@@ -219,34 +219,34 @@ classDiagram
 class ReferencingType {
   [weak] data: DataType
 }
-class __clawr_weak_island {
+class __rc_proxy {
   refs: integer
   target→
 }
-class __clawr_rc_header {
+class __rc_header {
   semantics = SHARED
   is_a: type_info→
   refs: integer
-  island→
+  proxy→
 }
 class DataType {
   header
   payload
 }
 
-ReferencingType --> __clawr_weak_island
-__clawr_weak_island --> DataType
-DataType o--> __clawr_rc_header
-__clawr_rc_header --> __clawr_weak_island
+ReferencingType --> __rc_proxy
+__rc_proxy --> DataType
+DataType o--> __rc_header
+__rc_header --> __rc_proxy
 ```
 
-When the first `weak` reference is established, the `__clawr_weak_island` structure is created with a reference-counter of 1, and the main object is updated to reference it. (The main object might be counted as well, but it is not necessary. If it is, the reference-counter should start at 2.)
+When the first `weak` reference is established, the `__rc_proxy` structure is created with a reference-counter of 1, and the main object is updated to reference it. (The main object might be counted as well, but it is not necessary. If it is, the reference-counter should start at 2.)
 
 When subsequent `weak` references are established, the reference-counter is incremented, and when they are reassigned or descoped, the counter is decremented. The structure is however not necessarily deallocated when the counter reaches zero. Instead it is deallocated with the main object.
 
 If the main object is deallocated when the reference-counter is non-zero, the structure will *not* be deallocated. Instead it will be deallocated when the reference-counter reaches zero (i.e. when all `weak` references have been removed).
 
-Adding the main object to the reference-counter might simplify this logic. Then the counter would be decremented when the object itself goes out of scope as well as when `weak` references are removed. Whether is is caused by the references or by the object itself, the `__clawr_weak_island` structure is deallocated as soon as the counter reaches zero.
+Adding the main object to the reference-counter might simplify this logic. Then the counter would be decremented when the object itself goes out of scope as well as when `weak` references are removed. Whether is is caused by the references or by the object itself, the `__rc_proxy` structure is deallocated as soon as the counter reaches zero.
 
 Whether the object is included in the counter is—at this time—a purely aesthetic choice. It may be prudent to perform some analysis/tests of the performance ramifications before settling on the implementation.
 
@@ -262,7 +262,7 @@ Here is a sketch of how it might be implemented in C (with the object included i
 typedef struct {
     void* target;
     atomic_uintptr_t refs; // Counts the `weak`references to object
-} __clawr_weak_island;
+} __rc_proxy;
 
 typedef struct {
     // From existing runtime:
@@ -270,60 +270,60 @@ typedef struct {
     __clawr_type_info* is_a;
 
     /// @brief the Pepparholm island for weak references
-    __clawr_weak_island* island;
-} __clawr_rc_header;
+    __rc_proxy* proxy;
+} __rc_header;
 
-__clawr_weak_island* createWeakRef(__clawr_rc_header* target) {
+__rc_proxy* createWeakRef(__rc_header* target) {
     // Weak references are only needed (or possible) for `ref` variables
     assert((target->refs & __clawr_ISOLATION_FLAG) == __clawr_SHARED);
 
-    if (target->island) {
-	    atomic_increment(&target->island->refs);
+    if (target->proxy) {
+	    atomic_increment(&target->proxy->refs);
     } else {
-        target->island = alloc(sizeof(__clawr_weak_island));
-	    target->island->target = target;
-	    atomic_init(target->island->refs, 2);
+        target->proxy = alloc(sizeof(__rc_proxy));
+	    target->proxy->target = target;
+	    atomic_init(target->proxy->refs, 2);
     }
-    return target->island;
+    return target->proxy;
 }
 
-void* releaseRC(__clawr_rc_header* header) {
+void* releaseRC(__rc_header* header) {
     // See implementation in runtime.md
     // ... if refs reaches 0:
     {
-	    __clawr_weak_island* island = header->island;
-	    if (island) {
-	        island->target = NULL;
+	    __rc_proxy* proxy = header->proxy;
+	    if (proxy) {
+	        proxy->target = NULL;
 
 	        // The target's reference is gone
-	        releaseWeakRef(island);
+	        releaseWeakRef(proxy);
 	    }
         free(header);
     }
     return NULL;
 }
 
-void releaseWeakRef(__clawr_weak_island* island) {
+void releaseWeakRef(__rc_proxy* proxy) {
 	// Note: atomic_decrement() returns the old value, not the new.
 	// So to check if there are zero references, we compare the old
 	// value with 1, which is equivalent to comparing the new value with 0.
-    if (atomic_decrement(&island->refs) == 1) {
-        free(island);
+    if (atomic_decrement(&proxy->refs) == 1) {
+        free(proxy);
     }
 }
 
-void* getTarget(__clawr_weak_island* island) {
-	if (!island) return NULL;
-	return island->target;
+void* getTarget(__rc_proxy* proxy) {
+	if (!proxy) return NULL;
+	return proxy->target;
 }
 ```
 
 > [!warning]
-> The above code is a sketch. It will probably contain bugs. You should probably be especially concerned about atomicity/concurrent updates. In particular, I believe that the `else` branch in `createWeakRef` may need to set an atomic flag to avoid creating another island for the same target.
+> The above code is a sketch. It will probably contain bugs. You should probably be especially concerned about atomicity/concurrent updates. In particular, I believe that the `else` branch in `createWeakRef` may need to set an atomic flag to avoid creating another proxy for the same target.
 
-When a `weak ref` variable is assigned, the runtime executes `createWeakRef(referencedObject)` and assigns the address of the created `__clawr_weak_island` structure to the variable, not the address of the `referencedObject` itself. When a `weak ref` is later reassigned or exits scope, the runtime calls `releaseWeakRef(island)`. This also happens when the target is freed.
+When a `weak ref` variable is assigned, the runtime executes `createWeakRef(referencedObject)` and assigns the address of the created `__rc_proxy` structure to the variable, not the address of the `referencedObject` itself. When a `weak ref` is later reassigned or exits scope, the runtime calls `releaseWeakRef(proxy)`. This also happens when the target is freed.
 
-When a `weak ref` variable is looked up, it is always done through the `lookupTarget(island)` call. If a field or a method is executed, the same lookup must be repeated before looking up the field or method in the actual object. It should probably be recommended to always look up the variable only once when making multiple calls to the same weakly referenced object. That way, the object is retained by at least one variable and cannot suddenly be freed (and the lookup be `NULL`).
+When a `weak ref` variable is looked up, it is always done through the `lookupTarget(proxy)` call. If a field or a method is executed, the same lookup must be repeated before looking up the field or method in the actual object. It should probably be recommended to always look up the variable only once when making multiple calls to the same weakly referenced object. That way, the object is retained by at least one variable and cannot suddenly be freed (and the lookup be `NULL`).
 
 ### Synchronisation
 

@@ -7,9 +7,9 @@ Event sourcing allows us to know the state of the system at any point in the pas
 We can use this state information for several things, including debugging and auditing. The most obvious use case, however, is to track the current state in a more searchable form—a  read model.
 
 > [!note] Command/Query Responsibility Segregation (CQRS)
-> CQRS separates the an application in two parts with little-or-no shared code. The command-side (write model) is the information gatherer. It enforces the rules of the business and ensures that only valid/allowed state changes are applied.
+> CQRS separates an application in two parts with little-or-no shared code. The command-side (a.k.a. “write model”) is the information gatherer. It enforces the rules of the business and ensures that only valid/allowed state changes are applied.
 >
-> The query-side (read model) is much simpler: it only has to read current-state data. If the read model uses a different database from the write model, it can be replicated in the thousands to serve millions (or billions even) of users on different continents without latency.
+> The query-side (or “read model”) is much simpler: it only has to read current-state data. If the read model uses a different database from the write model, it can be replicated in the thousands to serve millions (or billions even) of users on different continents without latency.
 
 ## Event — The Unit of State
 
@@ -27,7 +27,7 @@ data Event {
 ```
 
 > [!note]
-> The write model includes an `Entity` `trait` that is implemented by `object` types to encapsulate state and enforce correct updates. The projection (read-model) side does not need to model the `Entity` as a first-order entity.
+> The write model includes a `trait`, `Entity`, that is applied to `object` types to encapsulate state, guard invariants, and enforce valid state changes. The projection (read-model) side does not need to model the `Entity` as a first-order entity.
 
 ## Event Source — Emitter of Events
 
@@ -222,7 +222,7 @@ object ReceptacleCollection {
 
 mutating:
 
-    func add(_ receptacle: Receptacle) {
+    func add(_ receptacle: ref Receptacle) {
         for (eventName in receptacle.acceptedEvents()) {
 			if (eventName in receptacles)
 				receptacles[eventName].append(receptacle)
@@ -231,7 +231,7 @@ mutating:
         }
     }
 
-    func remove(_ receptacle: Receptacle) {
+    func remove(_ receptacle: ref Receptacle) {
         for (eventName in receptacle.acceptedEvents())
 			receptacles[eventName].remove(receptacle)
     }
