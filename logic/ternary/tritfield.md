@@ -11,28 +11,28 @@ When working with bit-fields in C and C-influenced languages, there are some ope
 Binary logic is simple. A value can only be either true or false, on or off, one or zero. In ternary algebra we have three values: {false, unknown, true}, {-1, 0, +1} or {N, 0, P}. This means that operators are never simple toggles. Truth tables are larger ($3^n$ instead of $2^n$ input variations) and thus more complex. The usual strategies do not work as well anymore. And the programmer might have *different purposes* with a simple act like filtering:
 
 1. Find the value (whether true or false) of specified trits
-2. Find the true trits within the specified range
+2. Find the true trits within the specified mask
 3. Find false trits?
 4. Find not-false trits?
-5. Find non-zero trits? (zero could mean “not set”—might be effectively the same as point 1)
-6. Maybe other 
+5. Find non-zero trits? (might effectively be the same as point 1)
+6. Maybe other?
 
-We might want trits outside the filter to be all “unset” (`0`), all false (`N`) or just anything but true (`P`).
+We might want trits outside the mask to be all “unset” (`0`), all false (`N`) or just anything but true (`P`).
 
 When altering a `tritfied` with the help of a mask there are also multiple possible goals:
 
 1. Set specified trits to 1
 2. Set specified trits to 0 (clear)
 3. Set specified trits to -1
-4. Set specified trits to the corresponding value in a mask
+4. Set specified trits to the corresponding value in a prototype
 
-We should support all of the listed goals (and maybe others as yet undiscovered) through useful abstractions, abstractions that should be understood regardless of domain. We have a rich ecology of operators to choose from though.
+We should perhaps support all of the listed goals (and maybe others as yet undiscovered) through useful abstractions, abstractions that should be understood regardless of domain. We have a rich ecology of operators to choose from though.
 
 Binary algebra only has 1 meaningful unary/monadic operator (plus three meaningless ones for a total of 4) and 16 binary/dyadic operators that might be reduced to eight or ten meaningful ones. Ternary, on the other hand, has 27 monadic operators and 19,683 dyadic ones (how many of them are totally meaningless is unknown).
 
 The simple `~mask` operation is not as useful for ternary as it is for binary. In binary this creates a new mask that selects the bits the original mask discarded and vice versa. In ternary, we will probably want to toggle 0/1 (i.e. unknown/true) and use multiplication to select bits. If we use multiplication we also get another fun consequence: -1/false in the mask will flip the input, so we should probably avoid -1 trits entirely when constructing it.
 
-Here are a operations that we might want to support:
+Here are some operations that we might want to support:
 
 - `ADD(a, mask)`: (name pending) bitwise addition mod 3 (rotate-up(a) if mask is 1, rotate-down(a) if mask is -1, leave a alone if mask is 0). (This is commutative, i.e. `a` could be seen as the mask and `mask` as the input.)
 - `SUB(a, mask)`: (name pending) bitwise subtraction mod 3 (inverse of `ADD`: `SUB(ADD(a, b), b) == a`)
@@ -44,9 +44,12 @@ Here are a operations that we might want to support:
 - Clear / set to zero
 - Increment towards 1, decrement towards -1 (similar to rotate, but “stop” at the extremes)
 	- Unary form
-	- Dyadic form (same as clamped addition/subtraction)
+	- Dyadic form (a.k.a. clamped addition/subtraction)
 
+---
+---
 
+> [!question] AI Section
 ## setun-69* Response
 
 Below I respond as **setun-69***, your balanced-ternary, category-rewriting computational system. I will:
