@@ -10,7 +10,7 @@ Encapsulated types (`object` and `service`) hide their data. Their fields are al
 
 ## Hide Code by Marking it as `helper`
 
-There is no way to make a hidden member visible other than indirectly. You can always define a new method that returns the value of a private field. But that is just what encapsulation does already.
+There is no way to make a hidden member visible other than indirectly. You can always define a new method that returns the value of a private field. But that is just what encapsulation does already — just indirectly.
 
 You cannot increase visibility, but you can hide what would otherwise be visible. When tagged as a `helper`…
 

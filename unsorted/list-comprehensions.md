@@ -26,12 +26,12 @@ func f(x: integer, y: integer) => x + y
 const xs = [1, 2, 3]
 const ys = [4, 5]
 
-const c_product = { f(x, y) : x <- xs, y <- ys }.all()
+const c_product = [ f(x, y) :: x <- xs, y <- ys ]
 ```
 
 The first part is the function (`f`) used to combine the paired collection members in the output. We could use `(x, y)` to simply return pairs, but in this example we add `x + y` to return the sequence `[1 + 4, 1 + 5, 2 + 4, 2 + 5, 3 + 4, 3 + 5] = [5, 6, 6, 7, 7, 8]`.
 
-A list cartesian product is a generator. It does not automatically create a collection. Instead you have to explicitly state which items to collect. `Generator.all()` collects all yielded elements as an array.
+A list cartesian product is a generator. A generator is a `Sequence` and may be used by other generators or iterated through in a `for`/`in` loop. While it is technically a collection, its elements do not exist in memory unless it is iterated over. And even then, they are discarded immediately unless explicitly used.
 
 A generator's output can be infinite in size. As long as you only extract a finite number of elements, that is not a problem as they will not be kept in memory unless explicitly collected.
 
@@ -39,14 +39,16 @@ A generator's output can be infinite in size. As long as you only extract a fini
 const xs = [1, 2, 3]
 const ys = [4...] // 4, 5, 6, 7, 8, ... to infinity
 
-const collected = {
-  x + y // f
-: x <- xs, // iterated once
-  y <- ys  // iterated xs.count times
-}.take(15)
+const generator = [
+ x + y // f
+:: x <- xs, // iterated once
+,  y <- ys  // iterated xs.count times
+]
+const collected = generator.take(15)
 ```
 
-The output here is `[1 + 4, 1 + 5, 1 + 6, ..., 1 + 18]` or `[5, 6, 7, 8, 9, 19, 11, 12, 13, 14, 15, 16, 17, 18, 19]`. The `x <- xs` extraction is only iterated once through the collection, while `y <- ys` it iterated through once per `x` value. In this case, the second input is infinite. We will never get to `x` = 2 as we’d first have to pass through an infinite number of `y` values for `x` = 1.
+The output here is `[1 + 4, 1 + 5, 1 + 6, ..., 1 + 18]` or `[5, 6, 7, 8, 9, 19, 11, 12, 13, 14, 15, 16, 17, 18, 19]`. The runtime will iterate all through `y <- ys` for each element in `x <- xs`, but — since `ys` is infinite in size — we can never finish the `ys` for `x == 1`, and we will never see the 2.
+
 
 > [!note]
 > This replicates the way that nested loops work. The first loop is the outer loop and only iterated through once. Nested loops are progressively more frequent.
@@ -63,45 +65,46 @@ To distinguish a zip generator from a cartesian product, the syntax adds an angl
 const xs = [1, 2, 3]
 const ys = [4...] // 4, 5, 6, 7, 8, ... to infinity
 
-const zip_generator = {>
-  x + y       // yielded element
-: x <- xs     // input collection
-  y <- ys
-: x < 12 && y > 32
-}.all()
+const generator = [>
+   x + y       // yielded element
+:: x <- xs     // input collection
+,  y <- ys
+:: x < 12 && y > 32
+]
+const output = generator.all()
 ```
 
 The output will now be `[1 + 4, 2 + 5, 3 + 6]`, i.e. `[5, 7, 9]`.
 
 Instead of pairing all members multiplicatively, a zip generator pairs only the first in each list with each other, then the second in each list, etc. When either one of the list ends, the output ends too, even if the other input has more members to take from.
 
-The cartesian product is timeless. The goal is merely to generate all pairings; the order is not important (though well-defined). A zip generator is ordered, and the lists do not need to “exist,” but can be generated along the way:
+The cartesian product is timeless. The goal is merely to generate all pairings; the order is not important (though well-defined). A zip generator is ordered, and the elements do not need to “exist,” but can be generated along the way:
 
 ```clawr
-const zip_generator = {>
+const generator = [>
    x + y            // yielded element
-:  x <- xs          // input collection
-:> y := 0 ~> 1 + :y // generated value
-:  x < 12 && y > 32
-}
+:: x <- xs          // input collection
+|> y := 0 ~> 1 + y' // generated values [0, 1, 2, ...]
+:: x < 12 && y > 32
+]
 ```
 
-In a `{>}` block, all `<-` inputs are zipped, not multiplied. Generators do not produce a cartesian product. Instead they zip the input lists together until one of them has reached its end.
+In a `[>]` block, all `<-` inputs are zipped, not multiplied. Generators do not produce a cartesian product. Instead they zip the input lists together until one of them has reached its end.
 
 The syntax is similar to a cartesian-product list-comprehension, though it has some differences.
 
 - The starting brace is adorned to resemble a play-button (▶️—implying temporality; the `y` value is generated in a stateful and procedural manner, it is not declarative)
-- `|>` is meant to look like a play button even more strongly than `{>`, because this is where the procedural state originates
+- `|>` is meant to look like a play button even more strongly than `[>`, because this is where the procedural state originates
 - `:=` is an assignment operator. It can be repeated for consecutive “initial” values.
 - `~>` refers to a generator that will be used indefinitely to generate new values after the initial values run out.
-- `:strikes` refers to the value of `strikes` in the previous iteration (undefined in the first)
+- `y'` refers to the value of `strikes` in the previous iteration (undefined in the first)
 
 ### Example 1: the Fibonacci Sequence
 
 ```clawr
-const fibonacci = {> f
-  |> f := 0 := 1 ~> :f + ::f
-}
+const fibonacci = [> f
+  |> f := 0 := 1 ~> f' + f''
+]
 ```
 
 This means that in the first iteration, `f` is $f_1 = 0$ and in the second iteration $f_2 = 1$. In the third, and subsequent iterations, `f` is calculated as $f_n = f_{n-1} + f_{n-2}$.

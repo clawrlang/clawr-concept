@@ -71,6 +71,46 @@ Anywhere a `ternary` value is requested, a `boolean` can be used. And anywhere a
 
 I am not making a design choice or a recommendation here, but it is not inconceivable that the Clawr runtime could even change the logical representation of `false` when a `boolean` typed value is assigned to a `ternary` variable (or vice versa). Even if that is invisible in the Clawr source code. What is important is the semantic *intent*, not the actual execution.
 
-It might be awkward if we support bitfields. A binary processor needs `false` to be represented by a zero bit, whilst a ternary processor needs zero to mean `unset`. But I think this problem can be mitigated — if not entirely eliminated — as long as we do not *equate* false/true with their numeric values. As long as we think of the values semantically (as truth values, not numeric values) it does not matter what actual bits are used.
+It might be awkward if we support bitfields. A binary processor will need `false` to be represented by a zero bit, whilst a ternary processor needs zero to mean `unset`. But I think this problem can be mitigated — if not entirely eliminated — as long as we do not *equate* false/true with these numeric values. As long as we think of the values semantically (as truth values, not numeric values) it should not matter what transistor states are used to represent them.
 
-I have not yet figured out how generic data blobs (like in cryptography) should be treated on a ternary architecture. Performing bitwise (or tritwise) operations on ternary data cannot possibly have equivalent effects as when they are performed on binary architectures. Therefore, data blobs and data manipulation code must be unportable between architectures.
+## `bitfield` and `tritfield`
+
+Persistence media, communications protocols and encryption algorithms operate on anonymised data. Set theory is probably not highly relevant for these types, but let’s not fully close that door prematurely.
+
+Data can be either binary or ternary in nature (or use any other radix though that is not considered at this time). To read and manipulate such data, Clawr uses the types `bitfield` and `tritfield`. A `bitfield` is essentially a collection of positioned `boolean` values, and a `tritfield` is the same but with fully `ternary` values.
+
+The implementation of `bitfield` on ternary architectures will use under-utilised trits (capable of tree values, but only referencing two of them) and `tritfield` on binary architectures will need two bits for each trit, which doubles the memory pressure.
+
+## the Amazing Idea
+
+If `boolean` is a subset of `ternary`, it is also a *subtype* of `ternary`. Meaning: as in classic OO languages, `boolean` values can be assigned to `ternary` variables, fields and function parameters.
+
+But here's my crazy disruptive idea: Maybe, by focusing on sets instead of type hierarchies — subsets instead of subtypes — Clawr is able to do what other languages cannot: automatically know that a function will always return only a certain subset of the declared return type/set for a certain input.
+
+ Maybe an example is called for: basic `boolean` operators. If I negate a `ternary` value, I will need a `ternary` variable to hold the result, but if I negate a `boolean`, I can know that the result is also `boolean` because `!b` can never return `unset`.
+
+Similarly for AND (`&&`) and OR (`||`): if both  inputs to the operation are `boolean`, the output can never be `unset` and is thus known to be in the `boolean` subset. Could I achieve this with a single `ternary` implementation for each operator? Or would I need a specific `boolean` version?
+
+### Type Lattice
+
+The `ternary` set can be broken up into non-overlapping subsets. The smallest subsets are: { `false` }, { `unset` },  { `true` }. It is possible to order all subsets of `ternary` from the empty set to the complete `ternary` set. This is called a lattice:
+
+```
+        {false, unset, true}   (ternary)
+         /        |        \
+{false, true} {false,unset} {true,unset}
+         \        |        /   
+        {false} {true} {unset}
+          \       |       /
+                 ∅
+```
+
+When we’re guaranteed to be in the `boolean` subset:
+
+```
+           {false, true}   (boolean)
+             /       \
+           {false} {true}
+             \       /
+                 ∅
+```

@@ -10,11 +10,11 @@ The `ternary` type is an `enum` with three values: `{ false, unset, true }`. It 
 
 The `ternary` values are ordered: `false < unset < true`. This allows meaningful definitions of `boolean` operators on `ternary` values. AND (`&&`) becomes a min operation and OR (`||`) becomes max. This makes the operators work seamlessly on both `ternary` and `boolean` data.
 
-The NOT (`!`) operation also toggles between false/true. It leaves unset alone however; negating an unknown truth results in an unknown truth.
+The NOT (`!`) operation also toggles between `false`/`true`. It leaves `unset` alone however; negating an unknown truth results in an unknown truth.
 
 ## `ternary` $\supset$ `boolean`
 
-I may have missed consequences that make it impractical, but it is possible to consider `boolean` as a subset of `ternary`:
+It is possible to consider `boolean` as a subset of `ternary`:
 
 ```clawr
 enum ternary { false, unset, true }
@@ -27,7 +27,14 @@ type boolean = ternary @except(unset)
 
 Anywhere a `ternary` value is requested, a `boolean` can be used in its place. And anywhere a `boolean` value is returned, it can be assigned to a `ternary` variable.
 
-I am not making a design choice or even a recommendation here, but it is not inconceivable that the Clawr runtime could even change the underlying representation when a `boolean` typed value is assigned to a `ternary` variable (or vice versa). I’m particularly referring to the `false` value which could be represented as 0 when considered a `boolean`, but -1 when `ternary` (if that is deemed practical). What is important is that the *semantic intent* is upheld, not how the values are represented.
+> [!tip]
+> I am not making a design choice or even a recommendation here, but it is not inconceivable that the Clawr runtime could change the underlying representation when a `boolean` typed value is assigned to a `ternary` variable (or vice versa).
+>
+> I’m particularly referring to the `false` value which could be represented as 0 when considered a `boolean`, but -1 when `ternary`. On binary hardware, a `ternary` needs two bits and using only one bit for `boolean` values is far more efficient.
+>
+> On (balanced) ternary hardware, on the other hand, it might be reasonable to just use -1 for both cases.
+>
+> What is important is that the *semantic intent* (falsity) is upheld, not how values are represented at runtime.
 
 ## Operations
 
@@ -39,7 +46,7 @@ All the `boolean` operations apply to `ternary`, but with nuance in their interp
 - `==`
 - `!=`
 
-XOR is a controversial operator that is not strictly necessary (for scalar values) and is therefore not explicitly included. Use `!=` for the same effect.
+XOR is a controversial operator that is not strictly necessary (for scalar values) and is therefore not explicitly included. You can often use `!=` for the same effect.
 
 > [!question]
 > I’m not sure how equality should work. In SQL, comparisons with `NULL` are always false (both `==` and `!=`). You have to use `IS NULL` and `IS NOT NULL` to explicitly check if a value is `NULL`. Maybe `==` and `!=` should work the same way for Clawr `ternary`? And then a special function (or syntax?) should be added for comparing to `unset`?
