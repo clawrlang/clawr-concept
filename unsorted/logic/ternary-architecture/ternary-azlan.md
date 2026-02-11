@@ -15,7 +15,7 @@ Integers are 32 or 64 bits when compiling for binary architectures, but 27 or 54
 $$2^{32} = 4,294,967,296$$
 $$3^{27} = 7,625,597,484,987 \gg 2^{32}$$
 $$3^{20} = 3,486,784,401 ≈ 2^{32}$$
-$$2 \ \text{trits} \lesssim 3 \ \text{bits}$$
+$$3 \ \text{bits} \lesssim 2 \ \text{trits}$$
 
 A ternary *register* in a processor will probably be 27 ($3^3$) or 81 ($3^4$) trits, and those should be the default sizes when explicitly targeting ternary.
 
