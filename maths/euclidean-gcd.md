@@ -10,7 +10,7 @@ When $r_k = 0$, gcd$(a, b) = r_{k-1}$. If $\text{gcd}(a, b) = 1$ , $a$ and $b$ a
 In programming:
 
 ```clawr
-func gcd(_ a: integer, _ b: integer) -> integer {
+func gcd(_ a: integer @range(0...), _ b: integer @range(0...)) -> integer @range(0...a ∪ 0...b) {
     if (a == 0) return b
     if (b == 0) return a
 

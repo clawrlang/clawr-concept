@@ -14,7 +14,7 @@
 
 [![Rawry](../images/rawry.png)](./rawry.md)
 
-Clawr is a programming language designed to help you express your domain knowledge clearly so others (and your future self) can understand and learn them.
+Clawr is a programming language designed to help you express your domain knowledge clearly so others (including your future self) can understand it, and learn it.
 
 ## Why Clawr?
 
@@ -26,7 +26,7 @@ Code should read like your intent, not like a set of instructions for the compil
 
 ### About the Name
 
-It started as the “Azeea Language,” or Azlan for short. Aslan, of course, is “the Lion” in the title of C.S. Lewis' famous book *The Lion, the Witch, and the Wardrobe*. The name was at the same time not very unique, and too tied to the company name. I tried discarding the lion concept entirely, instead going with Oolang (for mild tea—oolong—and OO langugage) for a while. But that name was maybe too cute, and the lion kept roaring at me from the background. So I decided to bring it back, but with a new name.
+It started as the “Azeea Language,” or Azlan for short. Aslan, of course, is “the Lion” in the title of C.S. Lewis' famous book *The Lion, the Witch, and the Wardrobe*. The name was at the same time not very unique, and too tied to the company name. I tried discarding the lion concept entirely, instead going with Oolang (for mild tea — oolong — and OO language) for a while. But that name was maybe too cute, and the lion kept roaring at me from the background. So I decided to bring it back, but with a new name.
 
 The name Clawr is a portmanteau of the word “clarity” and a lion’s “rawr.” The alternative spelling was chosen in part because the resulting name spells out the word “claw,” another stereotypical element of felinity.
 

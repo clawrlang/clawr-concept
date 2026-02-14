@@ -1,8 +1,8 @@
 # Constrained `real` numbers
 
 - `real` should be an unconstrained real number, $x \in \mathbb{R}$.
-- `@precision(decimal 10)` indicates how many correct digits are needed (minimum)
-- `@range(r)` indicates the allowed size of the value (subset-generating)
+- `@precision(decimal: min)` indicates how many correct digits are needed (minimum)
+- `@range(min...max)` indicates the allowed size of the value (subset-generating)
 
 Questions:
 
@@ -21,6 +21,7 @@ Problems with `real` numbers:
 - How do we express constraints for `real` numbers that can be translated to widths in memory?
 - How do we maintain the right precision?
 
+---
 ---
 
 > [!question] AI Prompt
@@ -132,12 +133,12 @@ The compiler could make optimization decisions based on:
 // Constraints that enable Float64
 real@precision(≤15)           // Decimal precision
 real@range(-10^308..10^308)   // Magnitude range
-real@normalized                // No subnormal numbers needed
+real@normalized               // No subnormal numbers needed
 
 // Forces BigDecimal (or larger float)
 real@precision(100)           // Needs arbitrary precision
 real@exact                    // No rounding errors allowed
-real@range(10^400..10^500)   // Outside Float64 range
+real@range(10^400..10^500)    // Outside Float64 range
 ```
 
 ## Implementation Challenges
@@ -163,7 +164,6 @@ The tricky parts would be:
     const userInput: real = parseInput()
     // Can't prove precision at compile time
     ```
-    
 
 ## Possible Solution: Constraint Propagation
 
@@ -205,13 +205,9 @@ The runtime representation choice could be based on the intersection of constrai
 ## Questions for Your Design
 
 1. **Default behavior**: Unconstrained `real`—does it always use BigDecimal, or does the compiler try to infer minimal representation?
-    
 2. **Explicit vs implicit**: Can users force a representation (`real@repr(Float64)`) or is it always compiler-determined?
-    
 3. **Error handling**: What happens when a runtime value violates its constraint annotation? Trap? Exception? Implicit conversion?
-    
 4. **Literal inference**: Does `const x: real = 1.23` get minimal precision, or does the compiler track that it's exactly representable?
-    
 
 This is a really compelling design. The constraint system lets you express _intent_ (precision needs, range requirements) without dictating _mechanism_ (Float64, BigDecimal). Very Clawr-like!
 

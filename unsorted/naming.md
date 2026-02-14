@@ -6,14 +6,22 @@ Key strategy: Use special characters that are unlikely to be used in identifiers
 
 ### Suggestion:
 
-For methods and namespaced members:
+For methods and name-spaced members:
 
-`c_name := type_or_namespace , separator , member name`
+```ebnf
+c_name := type_or_namespace , separator , member_name
+separator := "ˇ" | "¸" | "˛" | "·"
+```
 
-- ˇ (⇧⌥X on Swedish Mac keyboard): Runtime structures such as `type_info`, `vtable`, …
+- ˇ (⇧⌥X): Runtime structures such as `type_info`, `vtable`, …
 - ¸ (⌥G): Namespace (“static”) members
 - ˛ (⌥H): Inheritance initialiser
 - · (⇧⌥.): Instance method
+
+(This scheme is currently employed in the [runtime repository](https://github.com/clawrlang/clawr-runtime).)
+
+> [!note]
+> The keyboard shortcuts listed above apply to Swedish-language Mac keyboards. Your setup might require other methods for replicating the corresponding characters. (If you at all need them.)
 
 ### Sample code:
 
@@ -50,46 +58,6 @@ namespace RectBlock {
 // Abstract object type
 typedef struct Prism {
     __rc_header header;
-    double height;
-} Prism;
-
-// Runtime vtable
-typedef struct Prismˇvtable {
-    double (*area)(void* self);
-} Prismˇvtable;
-
-// Runtime type info
-extern const __type_info Prismˇtype;
-
-// Initializer for inheriting types
-void Prism˛new_height(Prism* self, double height);
-
-// Instance method
-double Prism·volume(Prism* self);
-
-// Inheritance subtype
-typedef struct RectBlock {
-    __rc_header header;
-    Prism super; // Layout the super-type data
-    double width;
-    double depth;
-} RectBlock;
-
-// Runtime type info
-static __type_info RectBlockˇtype;
-
-// Instance method (vtable implementation)
-double RectBlock·area(void* self);
-
-// Factory method in RectBlock namespace
-RectBlock* RectBlock¸new_width_depth_height
-        (double width, double depth, double height);
-```
-
-```c
-// Abstract object type
-typedef struct Prism {
-    __rc_header header;
     int height;
 } Prism;
 
@@ -107,10 +75,14 @@ static const __type_info Prismˇtype = {
 };
 
 // Initializer for inheriting types
-void Prism˛new_height(Prism* self, int height);
+void Prism˛new_height(Prism* self, int height) {
+    self->height = height;
+}
 
 // Instance method
-int Prism·volume(Prism* self);
+int Prism·volume(Prism* self) {
+    return area(self) * self->height;
+}
 
 // Inheritance subtype
 typedef struct RectBlock {

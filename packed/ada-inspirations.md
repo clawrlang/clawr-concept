@@ -12,23 +12,23 @@ In Ada, you can specify types as ranges.
 type Score is range 0 .. 1_000_000;
 ```
 
-This feature is perfect for defining [domain primitives](https://software.sawano.se/2017/09/domain-primitives.html). Domain-driven design (DDD) uses [value objects](https://www.milanjovanovic.tech/blog/value-objects-in-dotnet-ddd-fundamentals) for two main purposes: on the one hand it allows for consistent computations, and on the other is supports fail-fast validation, and security by design. *Domain primitives* is the term for the latter.
+This feature is perfect for defining [domain primitives](https://software.sawano.se/2017/09/domain-primitives.html). Domain-driven design (DDD) uses [value objects](https://www.milanjovanovic.tech/blog/value-objects-in-dotnet-ddd-fundamentals) for two main purposes: on the one hand it allows for consistent computations, and on the other is supports fail-fast validation, and security by design. *Domain primitives* is a term for the latter.
 
-In Clawr, domain primitives can be created using a syntax that is inspired by Ada’s ranged types:
+In Clawr, domain primitives can be defined using a syntax that is inspired by Ada’s ranged types:
 
 ```clawr
-typealias EntityId = string @matching(/^a-z0-9$/g) @maxlength(256)
-typealias Version  = integer @min(0) @max(2_147_483_647) // This fits in 32 bits
+subset EntityId = string @matching(/^a-z0-9$/g) @maxlength(256)
+subset Version  = integer @min(0) @max(2_147_483_647) // This fits in 32 bits
 ```
 
 The compiler automatically injects range checking as necessary so that you do not need to worry about the implementation details. You can focus on modelling your domain.
 
-This syntax is not limited to named types, but can be applied ad hoc on a per-variable basis:
+This syntax is not limited to [*named* subsets](../types/types-as-sets.md), but can be applied ad hoc on a per-variable basis:
 
 ```clawr
-var personnummer: string @matches_swedish_personnumber // custom matcher (aspirational)
-var age: integer @within(18..100)
-var password: string @min_length(16) @matches(/[ !"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]/)
+mut personnummer: string @matches_swedish_personnumber // custom matcher (aspirational)
+mut age: integer @within(18..100)
+mut password: string @min_length(16) @matches(/[ !"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]/)
 ```
 
 If that is not enough for your use-case, you can always define types the traditional way:
@@ -78,6 +78,11 @@ data DeviceStatus {
 ```
 
 In this example, the entire structure fits in 1 + 16 + 12 bits, and a register is 64 bits, so it can and will be packed accordingly. The `@packable` annotation gives the compiler permission to perform the packing. Permission can also be granted more generally by an optimisation setting.
+
+---
+---
+
+> [!question] AI Section
 
 ## `real` Range and Precision
 
