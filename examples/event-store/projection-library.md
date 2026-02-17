@@ -183,7 +183,7 @@ role Receptacle {
 // Implement to configure polling frequency
 role PollingStrategy {
     // The maximum number of events to fetch in eacxh batch
-    func batchSize() -> integer @range(1..65_535)
+    func batchSize() -> integer [1...65_535]
 
     // Delay to next poll
     /// @param numNotified: the number of notified events in the last poll

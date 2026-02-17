@@ -2,7 +2,7 @@
 
 - `real` should be an unconstrained real number, $x \in \mathbb{R}$.
 - `@precision(decimal: min)` indicates how many correct digits are needed (minimum)
-- `@range(min...max)` indicates the allowed size of the value (subset-generating)
+- `[min...max]` indicates the allowed size of the value (subset-generating)
 
 Questions:
 

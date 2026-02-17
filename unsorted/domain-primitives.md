@@ -18,15 +18,15 @@ In Clawr, domain primitives can be created using a syntax that is inspired by Ad
 
 ```clawr
 domain EntityId = string @matching(/^a-z0-9$/g) @maxlength(256)
-domain Version = integer @range(0..2^32-1) // This fits in 32 bits
+domain Version = integer [0..<2^32] // This fits in 32 bits
 ```
 
 Or, equivalently:
 
 ```clawr
 // Not types -- just aliases to reduce typing:
-typealias EntityIdConstraint = string @matching(/^a-z0-9$/g) @maxlength(256)
-typealias VersionRange = integer @range(0..2^32-1) // This fits in 32 bits
+subset EntityIdConstraint = string @matching(/^a-z0-9$/g) @maxlength(256)
+subset VersionRange = integer [0..<2^32] // This fits in 32 bits
 
 // Types -- with type checking:
 domain EntityId = EntityIdConstraint
@@ -49,13 +49,13 @@ const x: EntityId = ...
 const y: EntityName = x // Compile-time error - different types
 ```
 
-**`typealias` does not create a type.**
+**`subset` does not create a type.**
 
 These ara two aliases for the same constraint:
 
 ```clawr
-typealias EntityId = string @matching(/^a-z0-9$/g) @maxlength(256)
-typealias EntityType = string @matching(/^a-z0-9$/g) @maxlength(256)
+subset EntityId = string @matching(/^a-z0-9$/g) @maxlength(256)
+subset EntityType = string @matching(/^a-z0-9$/g) @maxlength(256)
 
 const x: EntityId = ...
 const y: EntityName = x // Allowed - same type (`string`)
@@ -74,24 +74,24 @@ const y: string @matching(/^a-z0-9$/g) @maxlength(256) = x
 const x = 5
 ```
 
-The initial value (5) is of a highly constrained type (`integer @value(5)`). This is not a type you would typically assign a variable, but in this case the variable is defined as immutable (`const`) and can be implicitly typed, constrained to only allow the value it actually has. Therefore it *will* have that type.
+The initial value (5) is of a highly constrained type (`integer [5]`). This is not a type you would typically assign a variable, but in this case the variable is defined as immutable (`const`) and can be implicitly typed, constrained to only allow the value it actually has. Therefore it *will* have that type.
 
 Maybe this type-system (with implicit typing to a single value) can be used to afford Haskell-like optimisation too?
 
 ```clawr
-const x = 5 // integer @value(5)
-const y = x * 3 // integer @value(15)
+const x = 5 // integer [5]
+const y = x * 3 // integer [15]
 ```
 
 This could replace any reference to `x` with the numeric value 5 and any reference to `y` with the value 15. Inlined in the machine code! The variables themselves are then redundant and can be elided.
 
 ## Future Directions
 
-Support provably subset regex types:
+Support regex sub-lattices:
 
 ```clawr
-type Lowercase = string @matching(/^[a-z]+$/)
-type Alphanumeric = string @matching(/^[a-z0-9]+$/)
+subset Lowercase = string @matching(/^[a-z]+$/)
+subset Alphanumeric = string @matching(/^[a-z0-9]+$/)
 
 const lower: Lowercase = "abc"
 const alpha: Alphanumeric = lower  // Could prove this is safe (lowercase ⊂ alphanumeric)

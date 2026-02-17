@@ -71,7 +71,7 @@ If you specify ranges for variables in a `data` structure or the `data:` section
 @packable
 data DeviceStatus {
     isActive   : boolean
-    errorCode  : integer @range(0...65_535)
+    errorCode  : integer [0...65_535]
     flags      : bitfield @count(12) @MASK(0xFFF)
     maybeflags : tritfield @count(3) @MASK(0tUUU) // only on ternary archs
 }

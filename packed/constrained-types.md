@@ -13,9 +13,9 @@ A type is a sacred promise. If a variable has an explicit limit, it must always 
 A variable that is constrained to a small range can be stored in a small number ot bits (or trits in ternary). This can be used to optimise storage and computations.
 
 ```clawr
-mut x: integer @range(0..100) // fits in 7 bits or 5 trits
+mut x: integer [0...100] // fits in 7 bits or 5 trits
 mut y = x // unconstrained integer
-const A = 5 // implicit integer @value(5) - ultimately constrained
+const A = 5 // implicit integer [5] - ultimately constrained
 ```
 
 The compiler should choose the smallest representation possible to fit each variable. If no constraint is specified (or inferred), the compiler has no choice but use the arbitrarily sized “big integer” type, but with a known constraint, it can store values more compactly.

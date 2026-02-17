@@ -41,9 +41,9 @@ role CommandHandler<TCommand, TResult> {
 ## Core Entity Definition
 
 ```clawr
-typealias EntityId = string @matches(/^[a-zA-Z0-9_-]+$/)
-typealias TypeId = string @matches(/^[a-zA-Z0-9._-]+$/)
-typealias PersistedEntityVersion = integer @range(0..2_147_483_647)
+sub EntityId = string @matches(/^[a-zA-Z0-9_-]+$/)
+sub TypeId = string @matches(/^[a-zA-Z0-9._-]+$/)
+sub PersistedEntityVersion = integer [0...2_147_483_647]
 
 union EntityVersion {
     case notPersisted

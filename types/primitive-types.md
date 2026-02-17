@@ -57,7 +57,7 @@ Clawr uses arbitrarily-sized integers by default, eliminating overflow errors an
 
 ```clawr
 count: integer  // Grows as needed
-age: integer @range(0..150)  // Compiler uses appropriate fixed size
+age: integer [0...150]  // Compiler uses appropriate fixed size
 ```
 
 If the value is known to fit in 64 bits or less (or 256 bits or less?) the compiler can output optimised code for that datatype instead of the slower arbitrary-size implementation.

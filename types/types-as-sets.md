@@ -41,7 +41,7 @@ But even if we ignore the discrepancy of treating integers as bitfields, most la
 
 Some languages define a `BigInteger` type that can be any size. It grows arbitrarily as needed. This is useful, but does not significantly change the definition: an `integer` is a number that can fit in the given representation.
 
-For Clawr, types are sets and subsets. An `integer` is defined as any member of $\mathbb{Z}$ (realisable through some `BigInteger` implementation), but you can also constrain the available range of integers. An `integer @range(0..100)` guarantees that the value cannot exceed the given range. This is a subset of $\mathbb{Z}$ and effectively a new type.
+For Clawr, types are sets and subsets. An `integer` is defined as any member of $\mathbb{Z}$ (realisable through some `BigInteger` implementation), but you can also constrain the available range of integers. An `integer [0...100]` guarantees that the value cannot exceed the given range. This is a subset of $\mathbb{Z}$ and effectively a new type.
 
 Just as a `Dog` can be passed to any function which accepts an `Animal` argument, or assigned to an `Animal` variable, a constrained integer can be used wherever a less constrained integer is called for. As long as the value's type is guaranteed to be a subset of the required type, no limitations are imposed.
 
@@ -60,7 +60,6 @@ There may be consequences that make it impractical, but is possible to consider 
 
 ```clawr
 enum ternary { false, ambiguous, true }
-
 subset boolean = ternary - { ambiguous }
 ```
 
