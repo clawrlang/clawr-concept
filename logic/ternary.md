@@ -4,25 +4,25 @@ Like all programming languages designed for binary computers, Clawr has a `boole
 
 ## Definition
 
-The `ternary` type is an `enum` with three values: `{ false, unset, true }`. It purposely uses the same terminology as `boolean`, but just adds a third state that is neither true nor false.
+The `ternary` type is an `enum` with three values: `{ false, ambiguous, true }`. It purposely uses the same terminology as `boolean`, but just adds a third state that is neither true nor false.
 
 ## Ordering
 
-The `ternary` values are ordered: `false < unset < true`. This allows meaningful definitions of `boolean` operators on `ternary` values. AND (`&&`) becomes a min operation and OR (`||`) becomes max. This makes the operators work seamlessly on both `ternary` and `boolean` data.
+The `ternary` values are ordered: `false < ambiguous < true`. This allows meaningful definitions of `boolean` operators on `ternary` values. AND (`&&`) becomes a min operation and OR (`||`) becomes max. This makes the operators work seamlessly on both `ternary` and `boolean` data.
 
-The NOT (`!`) operation also toggles between `false`/`true`. It leaves `unset` alone however; negating an unknown truth results in an unknown truth.
+The NOT (`!`) operation also toggles between `false`/`true`. It leaves `ambiguous` alone however; negating an unknown truth results in an unknown truth.
 
 ## `ternary` $\supset$ `boolean`
 
 It is possible to consider `boolean` as a subset of `ternary`:
 
 ```clawr
-enum ternary { false, unset, true }
+enum ternary { false, ambiguous, true }
 
 type boolean = ternary @values(false, true)
 
 // or alternatively:
-type boolean = ternary @except(unset)
+type boolean = ternary @except(ambiguous)
 ```
 
 Anywhere a `ternary` value is requested, a `boolean` can be used in its place. And anywhere a `boolean` value is returned, it can be assigned to a `ternary` variable.
@@ -42,26 +42,26 @@ All the `boolean` operations apply to `ternary`, but with nuance in their interp
 
 - AND becomes MIN
 - OR becomes MAX
-- NOT toggles `true`/`false`, but does not change `unset`
+- NOT toggles `true`/`false`, but does not change `ambiguous`
 - `==`
 - `!=`
 
 XOR is a controversial operator that is not strictly necessary (for scalar values) and is therefore not explicitly included. You can often use `!=` for the same effect.
 
 > [!question]
-> I’m not sure how equality should work. In SQL, comparisons with `NULL` are always false (both `==` and `!=`). You have to use `IS NULL` and `IS NOT NULL` to explicitly check if a value is `NULL`. Maybe `==` and `!=` should work the same way for Clawr `ternary`? And then a special function (or syntax?) should be added for comparing to `unset`?
+> I’m not sure how equality should work. In SQL, comparisons with `NULL` are always false (both `==` and `!=`). You have to use `IS NULL` and `IS NOT NULL` to explicitly check if a value is `NULL`. Maybe `==` and `!=` should work the same way for Clawr `ternary`? And then a special function (or syntax?) should be added for comparing to `ambiguous`?
 
 Specifically `ternary` operators (with reservation for name changes):
 
-- `consensus` (or `CONS`) returns the consensus value if both inputs agree. If they disagree (or one is unsure) the output is `unset`.
-- `gullibility` (or `ANY`) is like an `OR` version of `consensus`; it only requires one adamant opinion to be convinced. If one input is `unset` the output will be whatever the other says.
+- `consensus` (or `CONS`) returns the consensus value if both inputs agree. If they disagree (or even if one is `ambiguous`) the output is `ambiguous`.
+- `gullibility` (or `ANY`) is like an `OR` version of `consensus`; it only requires one adamant opinion to be convinced. If one input is `ambiguous` the output will be whatever the other says.
 - `MUL` multiplies values (where false = -1, true = +1)
 - `add_mod_3()` and `sub_mod_3()`
 - `add_clamped()` and `sub_clamped()`
 - `rotate_up(t)` and `rotate_down(t)`
 - `clamp_inc(t)` and `clamp_dec(t)`
 
-And again: any input to these ternary operators can be `boolean` as `boolean` values are compatible with `ternary` variables/inputs, but the output from all operations is `ternary` and might be `unset` and thus incompatible with `boolean` variables.
+And again: any input to these ternary operators can be `boolean` as `boolean` values are compatible with `ternary` variables/inputs, but the output from all operations is `ternary` and might be `ambiguous` and thus incompatible with `boolean` variables.
 
 ## Control Flow
 
@@ -84,9 +84,9 @@ if (!t)
 else
   print("this is not happening)
 
-// Note that `ternary.zero` is neither true nor false.
+// Note that `ambiguous` is neither true nor false.
 
-t = unset
+t = ambiguous
 
 if (t)
   print("this is not happening)

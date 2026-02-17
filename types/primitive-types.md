@@ -7,7 +7,7 @@ Every language needs primitive types. Here is a proposed set for Clawr:
 - `real`: a floating-point value of unspecified precision.
 - `decimal`: a base-10 floating-point value of unspecified precision.
 - `boolean`: a value of `true` or `false`
-- `ternary`: an truth-value with three states (`negative`, `unset` and `positive`)
+- `ternary`: an truth-value with three states (`false`, `ambiguous` and `true`)
 - `bitfield`: a binary blob of anonymised data (each bit is conceptually a `boolean`)
 - `tritfield`: the ternary analogue to bitfield (where each trit is a `ternary` value)
 - `character`: a value that represents any valid (printable) character glyph. It could be simple as in C or more complex as in Swift
@@ -42,11 +42,11 @@ Numbers are just numbers. Their representation uses balanced ternary instead of 
 A `ternary` can replace a `boolean` in `if` statements and `while` loops. The `up` value counts as `true` and the `down` value as `false`. The `else` branch will be executed for two states.
 
 ```clawr
-if ternaryValue { print("Value is positive/true") }
-else { print("Value is either false/negative or unknown/zero")}
+if ternaryValue { print("Value is true") }
+else { print("Value is either false or ambiguous")}
 
-if !ternaryValue { print("Value is negative/false") }
-else { print("Value is either true/positive or unknown/zero")}
+if !ternaryValue { print("Value is false") }
+else { print("Value is either true or ambiguous")}
 ```
 
 ## Arbitrary Precision

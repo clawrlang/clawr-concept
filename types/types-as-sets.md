@@ -59,19 +59,20 @@ Considering types as sets has some benefits:
 There may be consequences that make it impractical, but is possible to consider `boolean` as a subset of `ternary`:
 
 ```clawr
-enum ternary { false, unset, true }
+enum ternary { false, ambiguous, true }
 
 subset boolean = ternary @values(false, true)
 
 // or alternatively:
 subset boolean = ternary @except(unset)
+subset boolean = ternary @except(ambiguous)
 ```
 
 Anywhere a `ternary` value is requested, a `boolean` can be used. And anywhere a `boolean` value is returned, it can be assigned to a `ternary` variable.
 
 I am not making a design choice or a recommendation here, but it is not inconceivable that the Clawr runtime could even change the logical representation of `false` when a `boolean` typed value is assigned to a `ternary` variable (or vice versa). Even if that is invisible in the Clawr source code. What is important is the semantic *intent*, not the actual execution.
 
-It might be awkward if we support bitfields. A binary processor will need `false` to be represented by a zero bit, whilst a ternary processor needs zero to mean `unset`. But I think this problem can be mitigated — if not entirely eliminated — as long as we do not *equate* false/true with these numeric values. As long as we think of the values semantically (as truth values, not numeric values) it should not matter what transistor states are used to represent them.
+It might be awkward if we support bitfields. A binary processor will need `false` to be represented by a zero bit, whilst a ternary processor needs zero to mean `ambiguous`. But I think this problem can be mitigated — if not entirely eliminated — as long as we do not *equate* false/true with these numeric values. As long as we think of the values semantically (as truth values, not numeric values) it should not matter what transistor states are used to represent them.
 
 ## `bitfield` and `tritfield`
 
@@ -87,13 +88,13 @@ If `boolean` is a subset of `ternary`, it is also a *subtype* of `ternary`. Mean
 
 But here's my crazy disruptive idea: Maybe, by focusing on sets instead of type hierarchies — subsets instead of subtypes — Clawr is able to do what other languages cannot: automatically know that a function will always return only a certain subset of the declared return type/set for a certain input.
 
- Maybe an example is called for: basic `boolean` operators. If I negate a `ternary` value, I will need a `ternary` variable to hold the result, but if I negate a `boolean`, I can know that the result is also `boolean` because `!b` can never return `unset`.
+ Maybe an example is called for: basic `boolean` operators. If I negate a `ternary` value, I will need a `ternary` variable to hold the result, but if I negate a `boolean`, I can know that the result is also `boolean` because `!b` can never return `ambiguous`.
 
-Similarly for AND (`&&`) and OR (`||`): if both  inputs to the operation are `boolean`, the output can never be `unset` and is thus known to be in the `boolean` subset. Could I achieve this with a single `ternary` implementation for each operator? Or would I need a specific `boolean` version?
+Similarly for AND (`&&`) and OR (`||`): if both  inputs to the operation are `boolean`, the output can never be `ambiguous` and is thus known to be in the `boolean` subset. Could I achieve this with a single `ternary` implementation for each operator? Or would I need a specific `boolean` version?
 
 ### Type Lattice
 
-The `ternary` set can be broken up into eight different, overlapping subsets. The smallest subsets are: { `false` }, { `unset` },  { `true` }. It is possible to order all subsets of `ternary` from the empty set to the complete `ternary` set. This is called a lattice:
+The `ternary` set can be broken up into eight different, overlapping subsets. The smallest subsets are: { `false` }, { `ambiguous` },  { `true` }. It is possible to order all subsets of `ternary` from the empty set to the complete `ternary` set. This is called a lattice:
 
 
 ```mermaid
@@ -101,14 +102,14 @@ graph BT
     subgraph ternary
     direction TB
         tf([false])
-        tu([unset])
+        tu([ambiguous])
         tt([true])
     end
 
     subgraph fu
    direction TB
         fuf([false])
-        fuu([unset])
+        fuu([ambiguous])
      end
 
     subgraph boolean
@@ -119,7 +120,7 @@ graph BT
 
     subgraph ut
     direction TB
-        utu([unset])
+        utu([ambiguous])
         utt([true])
     end
 
@@ -132,7 +133,7 @@ graph BT
     end
 
     subgraph u
-        u_u(["unset"])
+        u_u(["ambiguous"])
     end
 
     empty(["∅"])
@@ -218,7 +219,7 @@ This is a really thoughtful exploration of types as sets! You're articulating so
 
 Your observation about `!` on `boolean` vs `ternary` gets at something fundamental: **operations are functions between sets, and their codomains can be refined based on their domains**.
 
-This isn't just a cute property—it's a systematic way to recover precision that other type systems lose. In most languages, once you widen a `boolean` to a `ternary`, you've permanently lost the knowledge that it can't be `unset`. But in a set-based type system, that knowledge can be preserved through operations.
+This isn't just a cute property—it's a systematic way to recover precision that other type systems lose. In most languages, once you widen a `boolean` to a `ternary`, you've permanently lost the knowledge that it can't be `ambiguous`. But in a set-based type system, that knowledge can be preserved through operations.
 
 ## How This Could Work
 
@@ -228,15 +229,15 @@ Imagine each function having a **refinement transformer**:
 func not(t: ternary) -> ternary {
     match t {
         false -> true
-        unset -> unset
+        ambiguous -> ambiguous
         true -> false
     }
 }
 ```
 
 The language could automatically derive that:
-- `not(boolean)` → `boolean` (since `false`→`true`, `true`→`false`, never `unset`)
-- `not({false, unset})` → `{true, unset}`
+- `not(boolean)` → `boolean` (since `false`→`true`, `true`→`false`, never `ambiguous`)
+- `not({false, ambiguous})` → `{true, ambiguous}`
 - etc.
 
 You wouldn't need separate implementations. The *same* function definition, when analyzed with input type information, yields more precise output types.
@@ -336,7 +337,7 @@ You can narrow requirements without breaking changes:
 function process(value: ternary) -> ...
 
 // Version 2 - more precise about what we actually need
-function process(value: boolean | unset) -> ...  // Still accepts all v1 inputs
+function process(value: boolean | ambiguous) -> ...  // Still accepts all v1 inputs
 ```
 
 And widen returns without breaking changes:
@@ -487,7 +488,7 @@ This is your simplest, ideal domain.
 
 ## `ternary`
 
-**Carrier set**: `{false, unset, true}`
+**Carrier set**: `{false, ambiguous, true}`
 **Abstract lattice**: power set (8 elements)
 
 This is still small enough to be *exact*.

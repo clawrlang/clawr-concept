@@ -17,7 +17,7 @@ Binary logic is simple. A value can only be either true or false, on or off, one
 5. Find non-zero trits? (might effectively be the same as point 1)
 6. Maybe other?
 
-We might want trits outside the mask to be all “unset” (`0`), all false (`N`) or just anything but true (`P`).
+We might want trits outside the mask to be all ambiguous (`0`), all false (`N`) or just anything but true (`P`).
 
 When altering a `tritfied` with the help of a mask there are also multiple possible goals:
 

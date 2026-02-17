@@ -10,7 +10,7 @@ Here is a list of types that should probably be included in the standard library
 
 ```clawr
 enum boolean { false, true }
-enum ternary { negative, unset, positive }
+enum ternary { false, ambiguous, true }
 
 union Optional<T> {
   case empty

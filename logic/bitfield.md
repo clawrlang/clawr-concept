@@ -36,7 +36,7 @@ The `ternary` type supports all the `boolean` operations plus some additional on
 
 - Rotate-up/-down
 - Increment-/decrement-clamped
-- is-true/-false/-unset
+- is-true/-false/-ambiguous
 - Add/subtract clamped
 - Add/subtract mod 3
 - Consensus & Gullibility
@@ -70,13 +70,13 @@ In effect, there are three layers to a `bitfield` or a `tritfield`:
 
 Ternary does not just have one implementation. There are two interpretations of what ternary should be: *balanced* ternary and *positive* ternary. How does positive ternary (0, 1, 2) affect logics? It seems that balanced ternary (-1, 0, 1) is much more “logical.” 
 
-The discomfort comes from the fact that `unset == -true` and `false == -false` numerically. And because `false + false == false`, while `true + true == unset`.
+The discomfort comes from the fact that `ambiguous == -true` and `false == -false` numerically. And because `false + false == false`, while `true + true == ambiguous`.
 
 There are two fundamental ways to consider the bits in a computer: as logical truth-values or as Galois fields. For binary data, it does not matter which perspective is chosen. Binary operates on GF(2), 0 is false and 1 is true. XOR for example can be seen as a logical gate or a mod 2 addition.
 
 But the distinction does matter in ternary. And Clawr has elected to use logics instead of GF(3) mathematics to relate to `tritfield` operations. It works very well for balanced ternary, but if there are chips that employ positive ternary, those operations could feel awkward.
 
-The fundamental (Boolean) operations are trivial: AND translates to the minimum and OR translates to the maximum. For that to work, we order the labels `false`, `unset`, `true` in ascending order. For balanced ternary, `false` is -1 and `true` is 1. For positive ternary, `false` is probably 0 and `true` is 2. This is already odd, because `false` and `true` have different values based on architecture, but let’s continue anyway.
+The fundamental (Boolean) operations are trivial: AND translates to the minimum and OR translates to the maximum. For that to work, we order the labels `false`, `ambiguous`, `true` in ascending order. For balanced ternary, `false` is -1 and `true` is 1. For positive ternary, `false` is probably 0 and `true` is 2. This is already odd, because `false` and `true` have different values based on architecture, but let’s continue anyway.
 
 Logical NOT (or negation) toggles `true` and `false`, but leaves the neutral state as-is. On balanced ternary this is simply a sign switch. On positive ternary, it is the operation 2 - x.
 
@@ -84,7 +84,7 @@ Logical NOT (or negation) toggles `true` and `false`, but leaves the neutral sta
 
 Balanced ternary can define rotation — `rotate(a by: b)` — as ADD/SUB in GF(3). And clamped addition/subtraction can be labelled `adjust(a, towards: b)`.
 
-But on positive ternary, that translation fails. These operations no longer not represent (native) addition/subtraction, because `false + false == 0 + 0 == false`, while `true + true == 2 + 2 == 1 (mod 3) == unset`. To rotate up, we have to add `unset` to the input, and to rotate down, we add `true`.
+But on positive ternary, that translation fails. These operations no longer not represent (native) addition/subtraction, because `false + false == 0 + 0 == false`, while `true + true == 2 + 2 == 1 (mod 3) == ambiguous`. To rotate up, we have to add `ambiguous` to the input, and to rotate down, we add `true`.
 
 The resolution is to implement `rotate(a, by: b)` as `a + b - 1` (mod 3) on positive ternary architectures, and as `a + b` on balanced ternary. It is unclear how this affects performance, but it does at least *seem* to be twice the work…
 
@@ -106,6 +106,6 @@ One of the three states means output the successor state in a defined cyclic ord
 
 For balanced ternary, this rotation is implemented simply through mod 3 addition and subtraction. For positive-biased ternary it’s slightly more complicated — as already discussed. Avoiding GF(3) terminology entirely can make algorithms more portable.
 
-Clawr uses truth-values where `true` indicates the positive direction (“rotate up”) and `false` indicates the negative direction (“rotate down”). The normal ordering of the states — specifically for interpreting AND as MIN and OR as MAX — is that `false < unset < true`. To enable rotation (past the endpoints) `false` is considered the successor of `true`, and `true` the predecessor of `false` as if `true < false`, but that only applies to the rotation family of functions (`rotateUp`, `rotateDown` and `rotate(_, by:)`).
+Clawr uses truth-values where `true` indicates the positive direction (“rotate up”) and `false` indicates the negative direction (“rotate down”). The normal ordering of the states — specifically for interpreting AND as MIN and OR as MAX — is that `false < ambiguous < true`. To enable rotation (past the endpoints) `false` is considered the successor of `true`, and `true` the predecessor of `false` as if `true < false`, but that only applies to the rotation family of functions (`rotateUp`, `rotateDown` and `rotate(_, by:)`).
 
 So in an encryption algorithm written in Clawr, mixing message data with a key is done as `rotate(message, by: key)` and unmixing is done by `rotate(message, by: ~key)`.
