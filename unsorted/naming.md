@@ -66,7 +66,7 @@ typedef struct Prismˇvtable {
     int (*area)(void* self);
 } Prismˇvtable;
 
-// Tuntime type info
+// Runtime type info
 static const __type_info Prismˇtype = {
     .polymorphic_type = {
         .data = { .size = sizeof(Prism) },

@@ -214,7 +214,7 @@ service EventPublisher {
 
 ## Domain: Email-Address Value Object
 
-This entire type could be replaced with `typealias EmailAddress = string @matches(/^[^@]+@[^@]+\.[^@]+$/)`, but we'd lose the domain error—and the `prevalidated()` factory.
+This entire type could be replaced with `subset EmailAddress = string @matches(/^[^@]+@[^@]+\.[^@]+$/)`, but we'd lose the domain error—and the `prevalidated()` factory.
 
 ```clawr
 object EmailAddress {

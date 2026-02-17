@@ -18,11 +18,7 @@ It is possible to consider `boolean` as a subset of `ternary`:
 
 ```clawr
 enum ternary { false, ambiguous, true }
-
-type boolean = ternary @values(false, true)
-
-// or alternatively:
-type boolean = ternary @except(ambiguous)
+subset boolean = ternary - { ambiguous }
 ```
 
 Anywhere a `ternary` value is requested, a `boolean` can be used in its place. And anywhere a `boolean` value is returned, it can be assigned to a `ternary` variable.

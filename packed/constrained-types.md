@@ -2,7 +2,7 @@
 
 An `integer` is a member of $\mathbb{Z}$. It can be arbitrarily big (either positively or negatively) as long as the hardware and OS supply enough memory to hold it (and there is enough time to compute and assign it).
 
-A value can be known exactly (`integer @value(5)`) and so can a constant (immutable variable) that is assigned that value.
+A value can be known exactly (`integer [5]`) and so can a constant (immutable variable) that is assigned that value.
 
 A mutable variable can be reassigned, so it cannot hold a constrained type implicitly. It will have to allow any `integer` value unless explicitly limited.
 

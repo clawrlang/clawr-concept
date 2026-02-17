@@ -61,11 +61,7 @@ There may be consequences that make it impractical, but is possible to consider 
 ```clawr
 enum ternary { false, ambiguous, true }
 
-subset boolean = ternary @values(false, true)
-
-// or alternatively:
-subset boolean = ternary @except(unset)
-subset boolean = ternary @except(ambiguous)
+subset boolean = ternary - { ambiguous }
 ```
 
 Anywhere a `ternary` value is requested, a `boolean` can be used. And anywhere a `boolean` value is returned, it can be assigned to a `ternary` variable.
