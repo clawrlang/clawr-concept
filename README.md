@@ -14,7 +14,7 @@ Code should read like your intent, not like a puzzle for the compiler. Clawr's g
 
 ### About the Name
 
-It started as the “Azeea Language,” or Azlan for short. Aslan, of course, is “the Lion” in the title of C.S. Lewis' famous book *The Lion, the Witch, and the Wardrobe*. The name was at the same time not very unique, and too tied to the company name. I tried discarding the lion concept entirely, instead going with Oolang (mild tea) for a while. But that name was too cute, and the lion kept roaring in the background. So I decided to bring it back.
+It started as the “Azeea Language,” or Azlan for short. Aslan, of course, is “the Lion” in the title of C.S. Lewis' famous book *The Lion, the Witch, and the Wardrobe*. The name was at the same time not very unique, and too tied to the company name. I tried discarding the lion concept entirely, instead going with Oolang (mild tea) for a while. But that name was perhaps overly cute, and the lion kept roaring in the background. So I decided to bring it back.
 
 The name Clawr is a portmanteau of the word “clarity” and a lion’s “rawr.” The alternative spelling was chosen in part because the resulting name spells out the word “claw,” another stereotypical element of felinity.
 
@@ -35,7 +35,7 @@ Clarity is the fundamental goal of the Clawr language. Everything else follows f
 > That's when I recognized that they needed ScreechinglyObviousCode.”
 > —Alistair Cockburn <https://kidneybone.com/c2/wiki/ScreechinglyObviousCode>
 
-A roaring lion may not be as obvious as a screeching monkey, but it might be more dignified.
+A roaring lion may not be as obvious as a screeching monkey, but it does feel more dignified.
 
 ## Key Concepts
 
@@ -44,11 +44,17 @@ Here are some of the big ideas that Clawr is exploring:
 - [Variable Scope and Semantics](./semantics/README.md): Enforcing clear variable semantics to avoid unintended shared state and side effects.
 - [Object vs Data Segregation](types/README.md): Enforcing encapsulation for objects in business applications, while allowing pure, exposed data structures for big-data analysis.
 
-## Get Started
+## Getting Started with Clawr
 
 Let's start with something simple — [your first Clawr program](./documentation/tutorial/hello-world.md).
 
-There is a [proof of concept repository](https://github.com/clawrlang/clawr-poc) that implements a compiler and runtime for Clawr, demonstrating the variable scope and semantics model described above.
+## Get Started as a Contributor
+
+There are some proof of concept repositories on GitHub
+
+- [**Frontend**](https://github.com/clawrlang/clawr-swift-parsing): Demonstrates aspects of the syntax and AST optimisation, but does not generate machine code.
+- [**Runtime**](https://github.com/clawrlang/clawr-runtime): Demonstrates a plausible C implementation for reference counting, arbitrary precision integers and more in the runtime.
+- [**First Exploration**](https://github.com/clawrlang/clawr-poc): Demonstrates a complete pipeline from Clawr code to executables. The syntax — and implementation details — might be a bit dated however.
 
 ## Contributing
 
