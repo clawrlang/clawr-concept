@@ -2,6 +2,8 @@
 
 > [!warning]
 > This code has not been tested. There may be bugs.
+> 
+> The syntax for list comprehensions and zip-generators is not yet implemented. (And a Clawr testing library is yet to be conceived.) There is no way to test the code at this time.
 
 Here is a Clawr solution to the [Prime Factors kata](http://www.butunclebob.com/ArticleS.UncleBob.ThePrimeFactorsKata) by “Uncle Bob” Martin.
 

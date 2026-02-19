@@ -1,21 +1,23 @@
 # Addition and Subtraction
 
-Addition is simple. Subtraction is also simple in principle, but may be complex in practice. The most straightforward way to handle it is by adding the negative. Negating a ternary value is as simple as flipping all trits: `+` to `-` and `-` to `+`. That means that we can use the same structures to perform both subtraction *and* addition. This is valuable for chip design.
+Addition is simple. Subtraction is also simple in principle, but direct subtraction may be complex in practice. For balanced ternary, however, negating a value — $x \to -x$ — is extremely simple. It is just a matter of flipping all trits: `+` (+1) becomes `-` (-1) and `-` becomes `+`. That means that we can use a single algorithm to perform both subtraction *and* addition — $a - b = a + (-b)$. This is valuable for chip design.
 
-Here is an example to illustrate addition:
+> [!note] Positive Ternary (aside)
+> For positive ternary (0, 1, 2) negation is not as straight-forward. On the other hand all the algorithms we learn in school apply just that the base is 3 instead of 10. I.e. borrows give us a 3, and we have to carry when the sum exceeds 3.
 
+Here is an example to illustrate addition of balanced ternary numbers:
 
 > [!example]
 > $8 + 6 = 14$
 >
 > ```plain
 >   +0-  8
-> + +-0  5
+> + +-0  6
 > -----
 >  +---  14
 > ```
 
-In the rightmost column, we add the digit `-`(-1) and the digit `0`. The sum is `-`, which is entered in the same position in the result. In the second column, we add `0` and `-` in the opposite order, but with the same total. In the final column, we add two `+` digits, which results in the value $2$, or `+-`, so we have to add two digits on the left end of the result.
+In the rightmost column, we add the digit `-` and the digit `0`. The sum is `-`, which is entered in the same position in the result. In the second column, we add `0` and `-` in the opposite order, but with the same total. In the final column, we add two `+` digits, which results in the value $2$, or `+-`, so we have to prepend two digits on the left end of the result.
 
 Another example (with carry):
 

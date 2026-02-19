@@ -1,10 +1,12 @@
 # Ternary Character Encodings
 
-> Note: The AI suggests using 9 trits per character. That is a massive increase from 8-bit characters, but not enough to fit the Unicode specification. A register would probably fit 27 trits—or even 81, but let’s not get carried away here. 27 trits fits 7,625,597,484,987 different characters. That should be enough to include Klingon, Elven and many other fictional scripts, as well as experimental languages like Shavian.
+Here is a crazy idea that seems infeasible to say the least. For one thing this is almost certainly incompatible with binary computers (of which there are a few in service at the moment). But it is still fun to contemplate how character encodings **could work** if we we allowed completely free rein.
+
+ Note that the AI suggests using 9 trits per character. That is a massive increase from 8-bit characters, but not enough to fit the Unicode specification. A register would probably fit 27 trits—or even 81, but let’s not get carried away here. 27 trits fits 7,625,597,484,987 different characters. That should be enough to include Klingon, Elven and many other fictional scripts, as well as experimental languages like Shavian.
 
 Of course, designing a font that supports 7.6 trillion characters would not be a reasonable endeavour. Maybe it would make more sense to design one “plan” at a time. Maybe editors and word processors can be loaded with multiple fonts, one for each plan used in the document? We could still use the conceptual system described here, but fonts would contain characters for a single plan only (< 20,000 characters). The character defines the code-point in use and the corresponding font is loaded accordingly.
 
-This could be designed in a way that scales well. According to the AI almost all the written characters in the world fit in a single trite. It is unfortunate that it is a little bit too small. Maybe the hierarchical structure suggested in the dialogue below is modified slightly, we could maybe use fewer trits per character in a first implementation and then prepend those values with zeroes when we need other font maps?
+This *could* be designed in a way that scales well. According to the AI **almost all** the written characters in the world fit in a single trite. It is unfortunate that it is not quite all of them. Maybe if the hierarchical structure suggested in the dialogue below is modified slightly, we could use fewer trits per character in a first implementation and then prepend those original values with zeroes when we need other font maps?
 
 > [!question] AI Prompt
 > Hur representerar man tecken-tabeller i ternär form?
@@ -41,7 +43,7 @@ Ett riktigt ternärt system skulle skapa sin egen teckenstandard optimerad för 
 
 ### Hur en Sådan Tabell skulle Se Ut och Organiseras
 
-En ternär teckentabell skulle sannolikt organiseras logiskt i grupper baserade på de 27 (3³) "översta" tritsarna.
+En ternär teckentabell skulle sannolikt organiseras logiskt i 27 (3³) grupper baserade på de 3 "översta" tritsarna.
 
 ```plain
 Teckenkod: [ A B C | D E F G H I ]  // En 9-trits kod, grupperad i 3+6 för läsbarhet

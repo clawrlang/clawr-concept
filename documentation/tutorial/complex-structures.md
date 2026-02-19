@@ -52,7 +52,7 @@ print(averageCost(of: purchases))
 > 
 > These functions are outwardly similar. They both have a single parameter, which is an `Array` (a kind of list) of `Purchase` elements. They both define a `real` *return value*. How they compute the result is different though. One sums all the values together and returns that sum. The other also counts the number of items and calculates the average by dividing the total with the count.
 >
-> The `for in` syntax is similar to the `while` loop we saw in the previous chapter. `for in` goes through the elements of a collection and performs the block once for each element. The `p` variable in this example holds a reference to that element.
+> The `for in` syntax is similar to the `while` loop we saw in the previous chapter. `for in` goes through the elements of a collection and performs the block once for each element. The `p` variable in this example provides access to that element.
 
 ## The `object` Datatype
 
@@ -66,41 +66,45 @@ Let’s use the concept of `Money` to illustrate. An amount like $1.50 can be re
 object Money {
 
   func dollars() -> integer => self.cents / 100
-  func cents() -> integer => self.cents % 100
+  func cents() -> integer [0..<100] => self.cents % 100
 
 data:
   cents: integer
 }
 
 companion Money {
-  func amount(_ amount: real) => { cents: integer(real * 100) }
+  func amount(_ amount: real) => { cents: floor(amount * 100) }
   func cents(_ cents: integer) => { cents: cents }
-  func dollars(_ dollars: integer, cents: integer) => { cents: dollars * 100 + cents }
+  func dollars(_ dollars: integer, cents: integer [0..<100]) =>
+      { cents: dollars * 100 + cents }
 }
 ```
 
 > [!note] Object Instantiation
-> The `companion` structure defines type-namespaced functions (static methods) and variables (static fields). It has special access to `object` literals and through that defines how `Money` objects are created.
+> The `companion` structure defines a namespace for functions and variables that seem tp “belong” to the type itself. Unlike other namespaces, it has special access to `object` literals and through that defines how `Money` objects are created.
 >
-> In this case, you can create a money `object` representing $1.50 in three different ways: `Money.amount(1.5)`, `Money.cents(150)` or `Money.dollars(1, cents: 50)`. All three expressions represent the same amount, and they all result in equal `Money` objects.
+> Using the type defined above, you can create an `object` representing $1.50 in three different ways: `Money.amount(1.5)`, `Money.cents(150)` or `Money.dollars(1, cents: 50)`. All three expressions represent the same amount, and they all result in equal `Money` objects.
+
+The interface of this `object` refers to `integer [0..<100]` in a couple of places. This is much like a regular `integer` but with a *range constraint*. A regular `integer` can contain any value of $\mathbb{Z}$, but this specific constraint guarantees that no value less than 0 nor values 100 or higher can be allowed/returned in these places.
 
 The `cents: integer` field defines how the value is actually stored in memory. It is irrelevant when interacting with the object, but is is essential to its implementation. All methods defined by the `Money` type will be able to interact directly with the underlying `data`, but all other code has to interact through the exposed methods. They will have no idea that the value is stored as a single `integer` and not as a `real` number, nor as two `integer` values separating cents from dollars.
 
-If you have done any object-oriented programming before, you have probably been told to write getters and setters to avoid “exposing your privates.” Getters and setters are not a good design. They are essentially a workaround to pretend that you are “doing encapsulation” when you really don’t. Adding getters and setters is a good first step when *refactoring* from a exposed `data` structure to an encapsulated `object`, but you should not stop there. You should rethink the interface and continue refactoring to something more meaningful.
-
-True encapsulation happens when you design your objects from the outside in. When you do not design the data first, but the interface. When you start with the *meaning* of the object, and how that is perceived by other code, not with composition and implementation details.
+> [!note] Side-note: Getters and Setters are NOT Encapsulation
+>
+> If you have done any object-oriented programming before, you have probably been told to write getters and setters to avoid “exposing your privates.” Getters and setters are not a good design; they do not truly shield your privates at all.
+>
+> They are essentially a workaround for pretending that you are “doing encapsulation” when you really aren’t. Adding getters and setters is a good first step when **refactoring** from a exposed `data` structure to an encapsulated `object`, but you should not stop there. You should rethink the interface and continue refactoring to something that exposes **meaning** not **data**.
+>
+> True encapsulation happens when you design your objects from the outside in. When you do not design the data first, but the interface. When you start with the **meaning** of the object, and how that is perceived by other code, not with its composition and implementation.
 
 ## Mutable and Immutable Objects
 
 The `Money` object defined in the previous section has no good way to perform computations. You cannot change an existing `Money` object and it does not define how to make computations. You can only create new `Money` values from values that you compute in an external context.
 
-One thing we can do is add an operator. Operators are a special kind of functions. They are `static`, meaning that they do not apply to an instance, but only to whatever parameters it defines. Here is how we can add support for the `+` operator:
+One thing we can do is add an operator. Operators are a special kind of functions. They are “static,” meaning that they live in the `Money` namespace, but do not apply to a `Money` instance. Instead it has readonly access to whatever parameters it defines. Here is how we can add support for the `+` operator:
 
 ```clawr
-object Money {
-  // The same implementation as before...
-
-static:
+companion Money {
   operator a: Money + b: Money -> Money => Money.for(cents: a.cents + b.cents)
 }
 ```

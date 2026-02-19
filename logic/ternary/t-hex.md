@@ -14,7 +14,7 @@ But maybe there are better mnemonics?
 
 Speculative: The notation proposed above emphasises the first trit as more important as it alone defines the overall sign of the triplet’s numerical value. The letters `a` and `A` represent exact opposites (each trit negated) rather than common trit values.
 
-if the notation is only about selecting trit values, maybe `0tDPP` ($-5_{10}$) should be similar to `0t0PP` ($4_{10}$)? With the proposed notation they would be `E` and `d` respectively, which do not signal any kind of equality. If, on the other hand, the notation is understood as numeric digits, this form might be preferred. 
+If the notation is only about selecting trit values, maybe `0tDPP` ($-5_{10}$) should be similar to `0t0PP` ($4_{10}$)? With the proposed notation they would be `E` and `d` respectively, which do not signal any kind of equality. If, on the other hand, the notation is understood as numeric digits, this form might be preferred. 
 
 And also: which trit combinations should be considered close and which farther apart? Should `0tP00` be considered close to `0tN00`? Should `0t0P0` be considered  closer or farther apart? It is probably impossible to design a numeric system (using existing ASCII—or even Unicode) that is intuitive regarding which trit is what. Programmers will either have to memorise them or use a tool that translates it.
 

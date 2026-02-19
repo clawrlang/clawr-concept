@@ -1,21 +1,21 @@
 # CQRS / Event Sourcing Library
 
-`Segerfeldt.EventStore` is a family of NuGet packages designed for CQRS systems with event sourcing. This is an exploration of how the same libraries could be implemented in Clawr.
+`Segerfeldt.EventStore` is a family of (C#) NuGet packages designed for CQRS systems with event sourcing. This is an exploration of how those libraries could be ported to Clawr.
 
 ## Generic Architecture
 
-CQRS systems segregate state manipulation (commands, write model) from state examination (queries, read model). The read model is typically a very simple model of database queries and data structures. The write model should be a rich model with encapsulated objects that ensure always valid state and fail-fasts invalid actions.
+CQRS systems segregate state manipulation (commands, write model) from state examination (queries, read model). The read model is typically a very simple model of database queries and data structures. The write model should be a “rich model.” Meaning a model with encapsulated objects — “*entities*” — that ensure always valid state and fail-fasts invalid actions.
 
-Event sourcing means that the state of the system (the “truth”) is defined by lists of state *changes* that have occurred to the *entities* in the system.
+Event sourcing means that the state of the system (the “truth”) is defined by lists of *changes* to each entity in the system.
 
 The `EventStore` library is made up of two essential parts:
 
 1. **Source**: the command/write model is the “source of truth.” This is where the events are generated and *published*.
-2. **Projection**: a single-direction syncing service that polls for new changes in the write model and updates a read-model database.
+2. **Projection**: a single-direction syncing service that polls for new changes in the write model and can be used to updates a read-model database.
 
 The actual read model is defined by the developer. The projection library could be used to update multiple models with different foci and different structures.
 
-The events can also be used for debugging and auditing. And maybe other use cases I have not thought of.
+The events can also be used for debugging and auditing. And maybe for other use cases I have not yet thought of.
 
 ## The Common Protocol
 

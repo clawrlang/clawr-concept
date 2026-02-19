@@ -35,11 +35,11 @@ Let's start with a question: What is an `integer`?
 
 C programmers would perhaps answer “64 or 32 bits.” There is no semantics implied. The value can be bit-shifted, multiplied, XOR'ed, printed as an ASCII character… There is no semantics at all implied in the typename. All it is, is a size for layout.
 
-A C#, Java or Swift programmer—or really any programmer at all—would probably say something similar. An integer is a numeric value that is used in arithmetics, but it can also be used in bitwise Boolean operations in most other languages, maybe in all of them.
+A C#, Java or Swift programmer—or really any programmer at all—would probably say something similar. An integer is a numeric value that is used in arithmetics, but it can also be used in bitwise Boolean — a.k.a. GF(2) — operations in most languages, maybe in all of them.
 
 But even if we ignore the discrepancy of treating integers as bitfields, most languages agree that an `integer` is a numeric value that fits in a specific size (width) of binary bits.
 
-Some languages define a `BigInteger` type that can be any size. It grows arbitrarily as needed. This is useful, but does not significantly change the definition: an `integer` is a number that can fit in the given representation.
+Some languages define a `BigInteger` type that can be any size. It grows arbitrarily as needed. This is useful, but does not significantly change the definition: an `integer` is a base-2 number whose digits can be manipulated independently as Boolean/GF(2) values.
 
 For Clawr, types are sets and subsets. An `integer` is defined as any member of $\mathbb{Z}$ (realisable through some `BigInteger` implementation), but you can also constrain the available range of integers. An `integer [0...100]` guarantees that the value cannot exceed the given range. This is a subset of $\mathbb{Z}$ and effectively a new type.
 
@@ -53,6 +53,43 @@ Considering types as sets has some benefits:
 2. Runtime checks: values can be assigned with impunity. (This can be considered a downside as there is no compile-time guarantee. But the truth is that it is never a guarantee that an operation does not overflow.)
 3. Speed Optimisation: If values can be proven to always remain small, the `BigInteger` overhead can be skipped.
 4. Memory Optimisation: Several values can be packed into a single addressable unit (Ada style) for reduced memory footprint.
+
+### Reproducing C Types
+
+The standard library could define subsets for `integer` and `real` types. For example $\mathbb{N}$:
+
+```clawr
+subset natural = integer [0...]
+```
+
+It could also define subsets that automatically translate to C types:
+
+```clawr
+subset int32 = integer [-2^31..<2^31]
+subset uint32 = integer [0..<2^32]
+subset int64 = integer [-2^63..<2^63]
+subset uint64 = integer [0..<2^64]
+
+subset single = real [...] @precision(...) // Hm… @precision in subset?
+subset double = real [...] @precision(...) // Hm… @precision in subset?
+subset quadruple = real [...] @precision(...) // Hm… @precision in subset?
+```
+
+The subsets could be parameterised:
+
+```clawr
+subset int(bits: integer) = integer [-2^(bits-1)..<2^(bits-1)]
+subset uint(bits: integer) = integer [0..<2^bits]
+
+subset int(trits: integer) = integer [-(3^(trits+1)-1)/2...(3^(trits+1)-1)/2]
+
+// ... or perhaps constrained:
+subset int(bits: integer {16, 32, 64, 128})
+    = integer [-2^(bits-1)..<2^(bits-1)]
+
+subset int(trits: integer {27, 54, 81, 162, 243})
+    = integer [-(3^(trits+1)-1)/2...(3^(trits+1)-1)/2]
+```
 
 ### `boolean` ⊂ `ternary`
 

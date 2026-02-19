@@ -4,12 +4,12 @@ In an event-sourced system, the state is defined by the changes that have been p
 
 Event sourcing allows us to know the state of the system at any point in the past (and, of course, the current state right now). If we filter the events, we can choose to focus only on some entities or only on some aspects of their state.
 
-We can use this state information for several things, including debugging and auditing. The most obvious use case, however, is to track the current state in a more searchable form—a  read model.
+We can use this state information for several things, including debugging and auditing. The most obvious use case, however, is to track the current state in a highly searchable form—a  read model.
 
 > [!note] Command/Query Responsibility Segregation (CQRS)
 > CQRS separates an application in two parts with little-or-no shared code. The command-side (a.k.a. “write model”) is the information gatherer. It enforces the rules of the business and ensures that only valid/allowed state changes are applied.
 >
-> The query-side (or “read model”) is much simpler: it only has to read current-state data. If the read model uses a different database from the write model, it can be replicated in the thousands to serve millions (or billions even) of users on different continents without latency.
+> The query-side (or “read model”) is much simpler: it only has to read current-state data. If the read model uses a different database from the write model, it can be replicated in the thousands to serve millions (or billions even) of users on different continents — maybe even planets? — with very little latency.
 
 ## Event — The Unit of State
 
@@ -21,8 +21,8 @@ data Event {
     entityType: string
     name: string
     details: string  // JSON
-    ordinal: integer
-    position: integer
+    ordinal: sqlInteger
+    position: sqlBigint
 }
 ```
 
@@ -36,6 +36,9 @@ The `EventSource` service repeatedly polls an event-sourcing database (the “so
 You can subscribe to multiple sources. Each source database would need its own `EventSource` instance. The instances can be configured independently.
 
 ```clawr
+subset sqlInteger = integer [0..<2^32]
+subset sqlBigint = integer [0..<2^64]
+
 service EventSource {
     
     // Start continuous projection
@@ -51,14 +54,14 @@ service EventSource {
         const numNotified = self.pollEventsTableOnce()
 
         // Schedule next poll based on whether events were found
-        const nextDelay = self.pollingStrategy.nextDelay(numNotified)
+        const nextDelay = self.pollingStrategy.nextDelay(after: numNotified)
         self.currentDelay = Timer.after(nextDelay) {
             self.pollEventsTable()
         }
     }
 
-    func pollEventsTableOnce() -> integer {
-        const lastPosition = self.tracker.getLastFinishedPosition() ?? -1
+    func pollEventsTableOnce() -> sqlInteger {
+        const lastPosition = self.tracker.lastFinishedPosition() ?? -1
         const unsortedEvents = await self.repository.getEvents(
             since: lastPosition,
             maxCount: pollingStrategy.batchSize()
@@ -68,7 +71,7 @@ service EventSource {
     }
 
     // Emit events, handling incomplete batches
-    func emit(unsortedEvents: [ProjectionEvent]) -> integer {
+    func emit(unsortedEvents: [ProjectionEvent]) -> sqlInteger] {
         mut eventGroups = self.groupByPosition(unsortedEvents)
 
         // CRITICAL: If batch is full, last position might be incomplete
@@ -101,7 +104,7 @@ service EventSource {
     // Group events by position, sorted
     helper func groupByPosition(
         events: [ProjectionEvent]
-    ) -> [(position: integer, events: [ProjectionEvent])] {
+    ) -> [(position: sqlBigint, events: [ProjectionEvent])] {
         
         // Group and sort by position
         const groups = events
@@ -117,7 +120,6 @@ service EventSource {
     
     helper func emitEvent(event: ProjectionEvent) {
         const receptacles = self.receptacles.getReceptacles(event.name)
-        // SYNTAX: Can `ref` be implicit here?
         for (ref receptacle in receptacles) {
             receptacle.update(event)
         }
@@ -183,17 +185,17 @@ role Receptacle {
 // Implement to configure polling frequency
 role PollingStrategy {
     // The maximum number of events to fetch in eacxh batch
-    func batchSize() -> integer [1...65_535]
+    func batchSize() -> integer [1..<2^16]
 
     // Delay to next poll
     /// @param numNotified: the number of notified events in the last poll
-    func nextDelay(numNotified: integer) -> Duration
+    func nextDelay(after: sqlInteger) -> Duration
 }
 
 service DefaultPollingStrategy: PollingStrategy {
     func batchSize() => 100
 
-    func nextDelay(eventCount: integer) -> Duration {
+    func nextDelay(after eventCount: sqlInteger) -> Duration {
         // If no events found, wait longer
         return eventCount == 0 
             ? Duration.seconds(60)
@@ -204,10 +206,10 @@ service DefaultPollingStrategy: PollingStrategy {
 // Implement to persist the current position so that projection
 // can resume after a server restart
 role ProjectionTracker {
-    func getLastFinishedPosition() -> integer?
-    func onProjection(starting position: integer)
-    func onProjection(finished position: integer)
-    func onProjectionError(at position: integer)
+    func lastProjectedPosition() -> sqlBigint?
+    func onProjectionStarting(at position: sqlBigint)
+    func onProjectionFinished(at position: sqlBigint)
+    func onProjectionError(at position: sqlBigint)
 }
 ```
 
@@ -255,7 +257,7 @@ Use database transactions to employ an all-or-nothing approach to each projected
 
 ```clawr
 service AtomicSQLiteProjectionTracker embodies ProjectionTracker {
-    func getLastFinishedPosition() -> integer? {
+    func lastFinishedPosition() -> sqlBigint? {
         const result = await self.database.queryOne(
             "SELECT position FROM Projections WHERE source = ?",
             self.sourceName
@@ -263,12 +265,12 @@ service AtomicSQLiteProjectionTracker embodies ProjectionTracker {
         return result?.position
     }
     
-    func onProjectionStarting(position: integer) {
+    func onProjectionStarting(at position: sqlBigint) {
         // Start a transaction shared with receptacles
         transaction = database.beginTransaction()
     }
     
-    async func onProjectionFinished(position: integer) throws {
+    async func onProjectionFinished(at position: sqlBigint) throws {
         await self.database.execute(
             """
             INSERT INTO Projections (source, position) 
@@ -282,7 +284,7 @@ service AtomicSQLiteProjectionTracker embodies ProjectionTracker {
         database.commitTransaction()
     }
     
-    func onProjectionError(position: integer) {
+    func onProjectionError(position: sqlBigint) {
         // Rollback the transaction aborting all changes performed by
         // receptacles for this position
         database.rollbackTransaction()

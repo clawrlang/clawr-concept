@@ -18,12 +18,14 @@ separator := "ˇ" | "¸" | "˛" | "·"
 - ˛ (⌥H): Inheritance initialiser
 - · (⇧⌥.): Instance method
 
-(This scheme is currently employed in the [runtime repository](https://github.com/clawrlang/clawr-runtime).)
+(This scheme is currently employed in the [runtime PoC](https://github.com/clawrlang/clawr-runtime).)
 
 > [!note]
 > The keyboard shortcuts listed above apply to Swedish-language Mac keyboards. Your setup might require other methods for replicating the corresponding characters. (If you at all need them.)
 
 ### Sample code:
+
+In this context, a *prism* is defined as a 3D figure with an irregular base and straight, parallel sides. A horizontal cut (parallel to the base) at any altitude will yield the exact same 2D cross section.
 
 ```clawr
 // Syntax pending
@@ -58,12 +60,12 @@ namespace RectBlock {
 // Abstract object type
 typedef struct Prism {
     __rc_header header;
-    int height;
+    double height;
 } Prism;
 
 // Runtime vtable
 typedef struct Prismˇvtable {
-    int (*area)(void* self);
+    double (*area)(void* self);
 } Prismˇvtable;
 
 // Runtime type info
@@ -75,12 +77,12 @@ static const __type_info Prismˇtype = {
 };
 
 // Initializer for inheriting types
-void Prism˛new_height(Prism* self, int height) {
+void Prism˛new_height(Prism* self, double height) {
     self->height = height;
 }
 
 // Instance method
-int Prism·volume(Prism* self) {
+double Prism·volume(Prism* self) {
     return area(self) * self->height;
 }
 
@@ -88,8 +90,8 @@ int Prism·volume(Prism* self) {
 typedef struct RectBlock {
     __rc_header header;
     Prism super;
-    int width;
-    int depth;
+    double width;
+    double depth;
 } RectBlock;
 
 // Runtime type info
@@ -104,13 +106,13 @@ static __type_info RectBlockˇtype = {
 };
 
 // Instance method (vtable implementation)
-int RectBlock·area(void* self) {
+double RectBlock·area(void* self) {
     RectBlock* rect = (RectBlock*) self;
     return rect->width * rect->depth;
 }
 
 // Factory method in RectBlock namespace
-RectBlock* RectBlock¸new_width_depth_height(int width, int depth, int height) {
+RectBlock* RectBlock¸new_width_depth_height(double width, double depth, double height) {
     // const self = RectBlock { Prism.new(height: height), width, depth }
     RectBlock* self = allocRC(RectBlock, __rc_ISOLATED);
     self->width = width;

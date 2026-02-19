@@ -1,20 +1,19 @@
 # Earliest Usable Product
 
-Back in 2016, [Henrik Kniberg](https://blog.crisp.se/2016/01/25/henrikkniberg/making-sense-of-mvp) suggested the “skateboard” approach to the MVP. He also proposed new terminology to emphasise the incremental approach to learning and construction. 
+Back in 2016, [Henrik Kniberg](https://blog.crisp.se/2016/01/25/henrikkniberg/making-sense-of-mvp) introduced what has come to be called the “skateboard” to the community/industry. It was a new way to imagine what an MVP should be. He also proposed [terminology](#knibergs-earliest--product-terminology) to emphasise the incremental approach to learning, construction and delivery. 
 
-This document will try to specify what functionality is needed for Clawr’s *[Earliest Usable Product](#knibergs-earliest--product-terminology)*.
+This document will try to specify what functionality is needed before Clawr can deliver an *[Earliest Usable Product](#knibergs-earliest--product-terminology)*.
 
-To be at all usable, the language must define syntax, IR, and runtime behaviour for the most pressing features. It must implement an entire pipeline, from lexing and parsing, to IR- and codegen, and finally generating executable machine code (a file) that can be deployed to a device.
+To be at all usable, the language must define a complete pipeline from source code to runtime for the most pressing features. It must implement lexing and parsing, IR- and codegen, and finally output an executable file that can be deployed to a device such as a computer server or a wearable.
 
 > [!note]
-> This document lists the features that have been identified so far. It does not judge which features are more important or which can be deferred.
+> This document lists the features that have been identified so far. It does not judge which features are more important or which can be deferred. And it doesn’t provide detail beyond what has already been explored in existing Clawr repositories.
 > 
 > Maybe a top-down analysis should be performed? In other words, what program (or programs) do we want to build using Clawr? What syntax do we need to specify, and what runtime features do we need to implement, to bring them all into reality?
 
-## ○ Documentation
+## Documentation
 
-
-This repository is the documentation of Clawr, both for linguists and compiler designers who want to help, and for developers who want to learn and use Clawr to write code. This documentation should be organised and maybe rewritten in places. But that might be okay to do at a later stage — when the syntax and semantics have solidified, and more features have been implemented.
+This repository is the Clawr documentation, both for linguists and compiler designers who want to help, and for developers who want to learn and use Clawr to write code. This documentation should be reorganised and maybe rewritten in places. But that might be okay to do at a later stage — when the syntax and semantics have solidified, and more features have been implemented.
 
 The [documentation](./documentation/index.md) folder contains introductions to the language for “normal” developers.
 
@@ -30,7 +29,7 @@ Some of the linguistics/compiler design documentation is in the unsorted/ folder
 
 ## Frontend — Parsing, Type Inference and Validation
 
-Tasks and features marked #poc have been implemented in [the frontend PoC repository](https://github.com/clawrlang/clawr-swift-parsing), either in full or just enough to prove plausibility/feasibility. It is possible that this repository can be relabelled and evolve into Clawr’s official/reusable frontend implementation. But it is also possible that it would be better to start afresh.
+Tasks and features marked #poc have been implemented in [the frontend PoC repository](https://github.com/clawrlang/clawr-swift-parsing), either in full or just enough to prove plausibility/feasibility. It is possible that this repository can be relabelled and evolve into Clawr’s official/reusable frontend implementation. But it is also possible that it would be better to start fresh.
 
 Tasks and features not marked #poc might still be implemented in the [e2e PoC](https://github.com/clawrlang/clawr-poc).
 
@@ -133,7 +132,7 @@ Tasks and features not marked #poc might still be implemented in the [e2e PoC](h
 
 ## Backend — Codegen & Runtime
 
-Tasks and features marked #poc have been implemented in [the runtime PoC repository](https://github.com/clawrlang/clawr-runtime). It is possible that this repository can be relabelled and evolve into an official compiler implementation that reuses the [common frontend](https://github.com/clawrlang/clawr-swift-parsing). But it is also possible that it would be better to start afresh.
+Tasks and features marked #poc have been implemented in [the runtime PoC repository](https://github.com/clawrlang/clawr-runtime). It is possible that this repository can be relabelled and evolve into an official compiler implementation that reuses the [common frontend](https://github.com/clawrlang/clawr-swift-parsing). But it is also possible that it would be better to start fresh.
 
 Tasks and features not marked #poc might still be implemented in the [e2e PoC](https://github.com/clawrlang/clawr-poc).
 
@@ -191,6 +190,8 @@ Optimisations are probably not necessary for utility, though they might be an im
 
 Building libraries is a major challenge. Some functionality (or maybe most) in the standard library are feasible, but I will need help to create UI and networking libraries.
 
+The runtime is written in C, and the e2e PoC generates C that is fed to the clang compiler.It might be possible to link to existing C libraries for the necessary functionality instead of implementing it all ourselves. In the future, Clawr should ideally not depend on C libraries — they are probably not compatible with ternary for one thing — but it could be useful for early stages.
+
 - [ ] ★ Standard Library
 	- [ ] ★ `rotate(ternary by: ternary)` #poc
 	- [ ] ★ `adjust(ternary towards: ternary)` #poc
@@ -224,7 +225,7 @@ Building libraries is a major challenge. Some functionality (or maybe most) in t
 
 Below is my interpretation of Henrik Kniberg’s terminology. I recommend reading [the original blog post](https://blog.crisp.se/2016/01/25/henrikkniberg/making-sense-of-mvp) to form your own understanding.
 
-The *Earliest Testable Product* (a.k.a. the “skateboard”) is a product meant to emphasise miscommunications, incorrect assumptions, and other holes in our understanding. It is created to help learn what the actual need is when we know essentially nothing other than claimed needs and vain hopes.
+The *Earliest Testable Product* (a.k.a. the “skateboard”) is a product meant to emphasise miscommunications, incorrect assumptions, and other holes in our understanding. It is created to help learn what the actual need is when we know essentially nothing other than grand claims and vain hopes.
 
 The *Earliest Usable Product* is a more mature product that knows the basic need but not the best solutions. It is a device that can be given to a user and actually assist them in accomplishing their goals. But it might be awkward to use, or it might not reach all the way to the end.
 

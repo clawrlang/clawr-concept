@@ -4,16 +4,16 @@ Many have considered [Boolean algebra](../boolean-algebra.md) too limited. Even 
 
 The most obvious extension to Boolean binary is to add a single extra state, an indeterminate or “unknown” state. We can notate the states as `-` for false, `+` for truth and `0` for the unknown state.
 
-There are also other notations. In Clawr, the `ternary` type is an `enum` with the three possible values `up` (true), `down` (false) and `zero`. To abbreviate those as single characters, we could use `U`, `D` and `0` respectively (and that’s how we represent ternary digits in a `tritfield`). For this document, the symbols `-`, `+` are probably the most illustrative. They are also the most often used in other literature.
+There are also other notations. In old versions of Clawr, the `ternary` type was an `enum` with the three possible values `up` (true), `down` (false) and `zero`. To abbreviate those as single characters, we could use `U`, `D` and `0` respectively (and that’s how we would represent ternary digits in a `tritfield`). For this document, the symbols `-`, `+` are probably the most illustrative. They are also the most often used in other literature.
 
 Basic dyadic (two inputs) logic operations can be translated to ternary. As we remember, in [Boolean algebra](../boolean-algebra.md):
 
-| $a$ | $b$ | $a \ \mathsf{AND} \ b$ | $a \ \mathsf{OR} \ b$ | $a \ \mathsf{XOR} \ b$ | $a \ \mathsf{IMPL} \ b$ |
-| :-: | :-: | :--------------------: | :-------------------: | :--------------------: | :---------------------: |
-|  F  |  F  |           F            |           F           |           F            |            T            |
-|  F  |  T  |           F            |           T           |           T            |            T            |
-|  T  |  F  |           F            |           T           |           T            |            F            |
-|  T  |  T  |           T            |           T           |           F            |            T            |
+| $a$ | $b$ | $a \ \mathsf{AND} \ b$ | $a \ \mathsf{OR} \ b$ | $a \ \mathsf{XOR} \ b$ |
+| :-: | :-: | :--------------------: | :-------------------: | :--------------------: |
+|  F  |  F  |           F            |           F           |           F            |
+|  F  |  T  |           F            |           T           |           T            |
+|  T  |  F  |           F            |           T           |           T            |
+|  T  |  T  |           T            |           T           |           F            |
 
 In ternary we use `+` to denote true and `-` to denote false (otherwise the table is identical):
 

@@ -30,16 +30,16 @@ On a ternary computer, a `tritfield` is a direct one-to-one mapping of trits. Ju
 On a binary computer, each trit must be represented by two bits. And operations will be more complex — and costly — than on ternary architectures. They also need an additional conversion step to/from native data. But semantically, they will have the same meaning on binary as on ternary hardware.
 
 > [!warning]
-> It is assumed that binary computers almost never need to process ternary data. The `tritfield` will be available regardless of architecture, but the recommendation is to not use `tritfield` unless explicitly compiling for ternary
+> It is assumed that binary computers almost never need to process ternary data. The `tritfield` will be available regardless of architecture, but the recommendation is to not use `tritfield` unless explicitly compiling for ternary. The simple `ternary` type is however a different story.
 
-The `ternary` type supports all the `boolean` operations plus some additional ones. All these operations apply equally (but bitwise – or “tritwise” maybe rather?) to `tritfield`. Not all these operations are syntactically in the form of operators (like `a & b`), but many are instead implemented as “free functions.”
+The `ternary` type supports all the `boolean` operations plus some additional ones. All these operations apply equally (but bitwise – or “tritwise” maybe rather?) to `tritfield`. Not all these operations are syntactically in the form of operators (like `a & b`), but many are instead implemented as “free functions.” (Though they could perhaps be written as methods.)
 
-- Rotate-up/-down
-- Increment-/decrement-clamped
-- is-true/-false/-ambiguous
-- Add/subtract clamped
-- Add/subtract mod 3
-- Consensus & Gullibility
+- Rotate-up/-down: `rotate(value, by: direction)`
+- Increment-/decrement-clamped: `adjust(value, towards: extreme)`
+- is-true/-false/-ambiguous: `==`
+- Add/subtract clamped: same as `adjust(towards:)`
+- Add/subtract mod 3: same as `rotate(by:)`
+- Consensus & Gullibility (not yet implemented)
 
 See details [here](../logic/ternary/ternary-algebra.md)
 
@@ -47,13 +47,13 @@ See details [here](../logic/ternary/ternary-algebra.md)
 
 Imagine a binary and a ternary computer that need to communicate using an encrypted channel. Respecting existing protocols, and the immense volume of currently operational binary hardware, the channel should probably be binary to limit the complexity to the ternary side only.
 
-If the binary computer wants to send a message like “hello.” It starts by encoding the string as UTF-8 and then encrypts those bytes using a secret key. This is no different than how encrypted communication already works. In Clawr, this data is a (native) `bitfield`.
+If the binary computer wants to send a message like “hello.” It starts by encoding the string as UTF-8 and then encrypts those bytes using a secret key. This is no different than how encrypted communication already works. On a binary computer UTF-8 and the encrypted message are both native. In Clawr, the form of this data is called a a `bitfield`.
 
-The ternary computer then receives this `bitfield`, but here it is not native. It now has to perform a binary decryption algorithm that generates a new (“plain-text”) `bitfield`. But it can still not make sense of it as it is in binary. It will therefore have to perform an additional conversion step from binary bytes to ternary trytes, so that it can understand the intent of the message — and correctly display the “hello” text to the user.
+The ternary computer then receives this `bitfield`, but here it is not native. It now has to perform a binary decryption algorithm on ternary hardware to generate the (“plain-text”) `bitfield`. And it can still not make proper sense of it as it is in binary. It will therefore have to perform an additional conversion step from binary bytes to ternary trytes — and ternary-encoded characters, so that it can understand the true meaning of the message — and correctly display the “hello” text to the user.
 
-When the ternary computer sends its response, it will need to encode the message as UTF-8 in a `bitfield` and perform binary encryption, before sending the encrypted message back to the binary computer.
+When it is time for the ternary computer to send its response, it will need to encode its ternary string as UTF-8 in a `bitfield` — and perform binary encryption on that data — before sending the encrypted message back to the binary computer.
 
-If the channel is ternary instead of binary, the burden is shifted to the binary computer performing ternary encryption algorithms instead of the ternary system performing binary. Otherwise the process is the same.
+If the channel is ternary instead of binary, the burden is shifted to the binary computer performing ternary encryption algorithms instead of the ternary system performing binary algorithms. Otherwise the process is identical.
 
 > [!warning] Unresolved Issue
 > Encryption typically applies a short key to a long message. There must be some way to split a `bitfield`/`tritfield` into small chunks that are operated upon piecemeal.
@@ -70,7 +70,7 @@ In effect, there are three layers to a `bitfield` or a `tritfield`:
 
 Ternary does not just have one implementation. There are two interpretations of what ternary should be: *balanced* ternary and *positive* ternary. How does positive ternary (0, 1, 2) affect logics? It seems that balanced ternary (-1, 0, 1) is much more “logical.” 
 
-The discomfort comes from the fact that `ambiguous == -true` and `false == -false` numerically. And because `false + false == false`, while `true + true == ambiguous`.
+The discomfort comes from the fact that numerically — in positive ternary — `ambiguous == -true` and `false == -false`. And also because `false + false == false`, while `true + true == ambiguous`.
 
 There are two fundamental ways to consider the bits in a computer: as logical truth-values or as Galois fields. For binary data, it does not matter which perspective is chosen. Binary operates on GF(2), 0 is false and 1 is true. XOR for example can be seen as a logical gate or a mod 2 addition.
 
@@ -78,13 +78,13 @@ But the distinction does matter in ternary. And Clawr has elected to use logics 
 
 The fundamental (Boolean) operations are trivial: AND translates to the minimum and OR translates to the maximum. For that to work, we order the labels `false`, `ambiguous`, `true` in ascending order. For balanced ternary, `false` is -1 and `true` is 1. For positive ternary, `false` is probably 0 and `true` is 2. This is already odd, because `false` and `true` have different values based on architecture, but let’s continue anyway.
 
-Logical NOT (or negation) toggles `true` and `false`, but leaves the neutral state as-is. On balanced ternary this is simply a sign switch. On positive ternary, it is the operation 2 - x.
+Logical NOT (or negation) toggles `true` and `false`, but leaves the neutral state as-is. On balanced ternary this is simply a sign switch. On positive ternary, it is the operation `2 - x`.
 
 ### ADD/SUB
 
 Balanced ternary can define rotation — `rotate(a by: b)` — as ADD/SUB in GF(3). And clamped addition/subtraction can be labelled `adjust(a, towards: b)`.
 
-But on positive ternary, that translation fails. These operations no longer not represent (native) addition/subtraction, because `false + false == 0 + 0 == false`, while `true + true == 2 + 2 == 1 (mod 3) == ambiguous`. To rotate up, we have to add `ambiguous` to the input, and to rotate down, we add `true`.
+But on positive ternary, that translation fails. These operations no longer represent (native) addition/subtraction, because `false + false == 0 + 0 == false`, while `true + true == 2 + 2 == 1 (mod 3) == ambiguous`. To rotate up, we have to add `ambiguous` (1) to the input, and to rotate down, we add `true` (2).
 
 The resolution is to implement `rotate(a, by: b)` as `a + b - 1` (mod 3) on positive ternary architectures, and as `a + b` on balanced ternary. It is unclear how this affects performance, but it does at least *seem* to be twice the work…
 
@@ -92,7 +92,7 @@ Maybe an optimisation trick could be applied to make actual algorithms more effi
 
 It would be awkward if we were trying to yield `a + b` specifically, but that is not the point. [^the-point] The algorithm is whatever it is: `rotate(a, by: rotate_up(b))` might be exactly what is needed to make the algorithm work for data encoded in positive ternary.
 
-[^the-point]: Or is it exactly the point? Maybe encryption algorithms are explicitly formulated as GF(3) transformations? In that case it *would* be awkward. We would need a translation key from GF(3) algebra to logics to work on Clawr `tritfield`. But then again: are GF(3) algorithms portable between different ternary bias? Maybe, expressing them in terms of logic operations is the key to portability?
+[^the-point]: Or is it *exactly* the point? Maybe encryption algorithms are explicitly formulated as GF(3) transformations? In that case it *would* be awkward. We would need a translation key from GF(3) algebra to logics to work on Clawr `tritfield`. But then again: are GF(3) algorithms portable between different ternary bias? Maybe, expressing them in terms of logic operations is the key to portability?
 
 Frontend optimisations simplify the AST from Clawr’s perspective, but the backend might undo some of those optimisations if the hardware architecture contradicts Clawr’s idea of what is “fundamental.”
 
