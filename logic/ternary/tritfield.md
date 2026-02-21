@@ -34,6 +34,10 @@ The simple `~mask` operation is not as useful for ternary as it is for binary. I
 
 Here are some operations that we might want to support:
 
+- **Pass-through mask:** `a * mask` where mask trits are `true` (keep) or `ambiguous` (suppress)
+- **Negate mask:** `a * mask` where mask trits are `false` (negate) or `true` (keep) or `ambiguous` (suppress) — a genuine ternary superpower with no binary analog
+
+
 - `ADD(a, mask)`: (name pending) bitwise addition mod 3 (rotate-up(a) if mask is 1, rotate-down(a) if mask is -1, leave a alone if mask is 0). (This is commutative, i.e. `a` could be seen as the mask and `mask` as the input.)
 - `SUB(a, mask)`: (name pending) bitwise subtraction mod 3 (inverse of `ADD`: `SUB(ADD(a, b), b) == a`)
 - Unary rotate-up/-down (equivalent to `ADD(a, 0t1111...)` or the inverse)
@@ -45,6 +49,13 @@ Here are some operations that we might want to support:
 - Increment towards 1, decrement towards -1 (similar to rotate, but “stop” at the extremes)
 	- Unary form
 	- Dyadic form (a.k.a. clamped addition/subtraction)
+
+- Rotate-up/-down: `rotate(value, by: direction)`
+- Increment-/decrement-clamped: `adjust(value, towards: extreme)`
+- is-true/-false/-ambiguous: `==`
+- Add/subtract clamped: same as `adjust(towards:)`
+- Add/subtract mod 3: same as `rotate(by:)`
+- Consensus & Gullibility (not yet implemented)
 
 ---
 ---

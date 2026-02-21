@@ -34,14 +34,48 @@ On a binary computer, each trit must be represented by two bits. And operations 
 
 The `ternary` type supports all the `boolean` operations plus some additional ones. All these operations apply equally (but bitwise – or “tritwise” maybe rather?) to `tritfield`. Not all these operations are syntactically in the form of operators (like `a & b`), but many are instead implemented as “free functions.” (Though they could perhaps be written as methods.)
 
-- Rotate-up/-down: `rotate(value, by: direction)`
-- Increment-/decrement-clamped: `adjust(value, towards: extreme)`
+Because some operations (like `MUL`) behave differently in balanced ternary from positive ternary (0, 1, 2), I have elected to emphasise truth-states and logics over GF(3) algebra. The following list maps **balanced** GF(3) operations to Clawr operators and functions:
+
+- Add/subtract mod 3: `rotate(value, by: direction)`
+- Rotate-up/-down: `rotate(by: true)` / `rotate(by: false)`
+- Add/subtract clamped: `adjust(value, towards: extreme)`
+- Increment-/decrement-clamped: `adjust(towards: true)`/`adjust(towards: false)`
 - is-true/-false/-ambiguous: `==`
-- Add/subtract clamped: same as `adjust(towards:)`
-- Add/subtract mod 3: same as `rotate(by:)`
-- Consensus & Gullibility (not yet implemented)
+- Multiplication: `mask(value, using: trits)`
+- Consensus & Gullibility (not truly GF(3) operations?) TBD
 
 See details [here](../logic/ternary/ternary-algebra.md)
+
+### Challenge: Ternary Filters
+
+In binary systems, we have simple tricks to filter the bits of `bitfield` values.
+
+- `a & mask`: filters the bits in `a`, returning zero for every bit position that is zero in the mask.
+- `~mask`: inverts a mask. Quick way to get a filter for “everything *except* certain bits”
+- `a &= ~mask`: unsets specific bits in `a` (where `mask` is 1)
+- `a |= mask`: sets specific bits in `a` (where `mask` is 1)
+
+These tricks do not work meaningfully on `tritfield`. We need new analogous operations to replace them.
+
+- `a & mask` → `mask(value, using: trits)`
+- `~mask` →  `rotate(~rotate(mask, by true), by: false)`
+- `a | mask` → `adjust(value, selecting: trits)`
+
+The analog to `~mask` is a bit verbose but it can probably be learned by programmers. Ternary algebra is inherently more complex than Boolean, and a programmer that takes on ternary should be prepared for that. But, on the other hand, maybe it could be worth it to hide this formula behind an API as well?
+
+Not that the ternary analog to `~mask` becomes nonsensical if there are any `false` trits. There is no sensible way to define the inverse of a mask that mixes `ambiguous` and `false`, so it can be considered undefined and pointless. The only meaningful inversion must labour under the assumption that `false` trits do not exist.
+
+The `mask(using:)` and `adjust(selecting)` functions should probably be implemented on the “backend,” the part of the compiler that translates the AST into executable machine code. The implementation of these operations will be different depending on if the hardware architecture is binary, balanced ternary of positive ternary. And the Clawr syntax must remain agnostic to this detail.
+
+>[!note] the `mask(using:)` function
+> The `mask` function can be seen as multiplication (in balanced GF(3)). If we map `false = -1`, `ambiguous = 0` and `true = 1`, `true * x == x`, `false * x == -x` and `ambiguous * x == ambiguous`. And this is indeed the output from the `mask`function.
+>
+> Wherever mask trits are `true`, their counterparts are passed through unchanged. Where they are `false` their counterparts are toggled. And `ambiguous` mask trits turn off their counterparts.
+>
+> This means that ternary masking is more powerful than binary masking — there is no equivalent to `mask(by: false)` in binary — but this is to be expected.
+
+> [!note] the `adjust(selecting:)`function
+> The `adjust` function is very much an antonym to the `mask` function. It passes trits through unchanged when the corresponding mask trit is `ambiguous` and forces the mask trit’s value wherever it is `true` or `false`.
 
 ## Example: Cross-Radix Encryption
 
