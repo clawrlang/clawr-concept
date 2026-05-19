@@ -13,6 +13,15 @@ In Clawr, variance is implicit and straightforward.
 - Isolated variables (`const`, `mut`) always enjoy covariance.
 - Shared variables (`ref`) are completely invariant.
 
+> [!quote]
+> Ah, yes. The generic collections problem. I have one use case that is obvious: `const`. When assigning a `List<integer [0..10]>` to a `const List<integer [0..100]>` there is no issue. Actually, there is no issue with `mut` either. The copy-on-write semantics implicitly converts the `List<integer [0..10]>` to a `List<integer [0..100]>`. Since no two variables can reference the same instance (after mutation), there is no conflict.
+>
+> The problem happens if I assign a `ref List<integer [0..10]>` to  a `ref` variable. That cannot be allowed.
+>
+> And vice-versa never works. Assigning a `List<integer [0..100]>` to a variable that expects elements no greater than 10 must be an error.
+>
+> —Myself to Autism Buddy GPT (started with a treatise about why I — a programmer — do not feel comfortable “programming” AI — *AI isn’t Programming*, ended up discussing Clawr)
+
 ---
 
 > [!question] AI Prompt

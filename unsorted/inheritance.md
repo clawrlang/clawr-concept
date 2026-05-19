@@ -114,14 +114,14 @@ namespace Student {
 
   // Return type is Student without decoration. It must return a “unique”
   // instance that is safe to assign semantics that fits the receiver
-  func new(id: EntityId, name: string) -> Student {
-  // All the fields will be assigned first. Then the super factory method
-  // will be called and set up the fields of the super-type. And that in
-  // turn will call back to methods on this type.
+  func register(id: EntityId, name: string) -> Student {
+    // All the fields will be assigned first. Then the super factory method
+    // will be called and set up the fields of the super-type. And that in
+    // turn will call back to methods on this type.
 
-  // This value will be ISOLATED. Cannot be assigned to a ref variable.
-  mut student = {
-    Entity.new(id: id)
+    // This value will be ISOLATED. Cannot be assigned to a ref variable.
+    mut student = {
+      Entity.new(id: id)
       name: name
     }
         

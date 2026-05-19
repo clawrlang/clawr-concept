@@ -7,7 +7,7 @@ To foster portability, Clawr uses `bitfield` and `tritfield` to define blobs. Th
 > [!note]
 > Sometimes referred to as [GF(2)](https://en.wikipedia.org/wiki/GF%282%29) algebra, binary fields can be said to operate with mod 2 arithmetics — XOR is mod 2 addition: $1 \oplus 1 = 0$. Logical operators and mod 2 arithmetics is practically inseparable.
 >
-> This is not true for ternary logic, however, and as a programmer — not a mathematician — I think the [Galois Field](https://en.wikipedia.org/wiki/Field_(mathematics)) perspective is less useful than considering bits and trits as logical truth-values.
+> This is not true for ternary logic, however, and as a programmer — not a mathematician — I think the [Galois Field](https://en.wikipedia.org/wiki/Field_(mathematics)) perspective is less useful than the considering bits and trits as logical truth-values.
 
 ## `bitfield`
 
@@ -17,7 +17,7 @@ On a binary processor, it works just as you would expect: bits are either 1 (`tr
 
 On a ternary computer, each trit has three possible values — not just two. But a `bitfield` — as a model of binary data — supports only two values (true or false, one or zero).
 
-The numeric values exist only at runtime and could be anything. {1, 0}, {1, -1}, {1, 2}, or whatever works for the runtime implementations and hardware. It is the backend’s prerogative to select its own runtime representation. What is important, however, is that the choice is made consistently so that the intended information is always unambiguous. And that the encoded meaning of the binary data is interpreted correctly when converted to/from native ternary representations.
+The numeric values exist only at runtime and could be anything. {1, 0}, {1, -1}, {1, 2}, or whatever works for the runtime implementations and hardware. It is the compiler’s prerogative to select its own runtime representation. What is important, however, is that the choice is made consistently so that the intended information is always unambiguous. And that the encoded meaning of the binary data is interpreted correctly when converted to/from native ternary representations.
 
 ## `tritfield`
 
@@ -77,22 +77,6 @@ The `mask(using:)` and `adjust(selecting)` functions should probably be implemen
 > [!note] the `adjust(selecting:)`function
 > The `adjust` function is very much an antonym to the `mask` function. It passes trits through unchanged when the corresponding mask trit is `ambiguous` and forces the mask trit’s value wherever it is `true` or `false`.
 
-#### An Idea for Ternary Filters
-
-- `modulate(a, by: b)` is balanced ternary `MUL`
-- `adjust(a, towards: b)` is balanced ternary `ADD` with caps
-- `rotate(a, by: b)` is balanced ternary `ADD` in mod 3
-
-We could implement setting bits to `true`/`false` using `adjust(adjust(settings, by: mask), by mask)`. The first call to `adjust` would change the target trits that are `ambiguous` to the target value, and trits that are already at the target, remain unchanged. The trits that started on the opposite end of their target, are made ambiguous, and taken the rest of the way in the second call.
-
-The `mask` would be `ambiguous` for the trits that should not be changed, and `true` or `false` to indicate the target value for the other trits.
-
-We can also implement clearing trits (setting them to `ambiguous`) by using `modulate`. The mask would need to be `ambiguous` for the targeted trits, and `true` for others.
-
-There might be a need for other filters, but the above two (or a combination of them) should be enough for most use cases.
-
-
-
 ## Example: Cross-Radix Encryption
 
 Imagine a binary and a ternary computer that need to communicate using an encrypted channel. Respecting existing protocols, and the immense volume of currently operational binary hardware, the channel should probably be binary to limit the complexity to the ternary side only.
@@ -138,11 +122,11 @@ But on positive ternary, that translation fails. These operations no longer repr
 
 The resolution is to implement `rotate(a, by: b)` as `a + b - 1` (mod 3) on positive ternary architectures, and as `a + b` on balanced ternary. It is unclear how this affects performance, but it does at least *seem* to be twice the work…
 
-Maybe an optimisation trick could be applied to make actual algorithms more efficient? E.g. on positive ternary, he complex expression `rotate(a, by: rotate_up(b))` could yield the simple `a + b`.
+Maybe an optimisation trick could be applied to make actual algorithms more efficient? E.g. on positive ternary, `rotate(a, by: rotate_up(b))` -> `a + b`.
 
-It would be awkward if we were trying to yield `a + b` specifically, but that is not the point. [^the-point] The algorithm is whatever it is: `rotate(a, by: rotate_up(b))` might be exactly what is needed to make the algorithm in question work for data encoded in positive ternary.
+It would be awkward if we were trying to yield `a + b` specifically, but that is not the point. [^the-point] The algorithm is whatever it is: `rotate(a, by: rotate_up(b))` might be exactly what is needed to make the algorithm work for data encoded in positive ternary.
 
-[^the-point]: Or is it *exactly* the point? Maybe encryption algorithms are explicitly formulated as GF(3) transformations? In that case it *would* be awkward. We would need a translation key from GF(3) algebra to logics to work on Clawr `tritfield`. But then again: are GF(3) algorithms portable between different ternary bias? Maybe expressing them in terms of logic operations *is* the key to portability?
+[^the-point]: Or is it *exactly* the point? Maybe encryption algorithms are explicitly formulated as GF(3) transformations? In that case it *would* be awkward. We would need a translation key from GF(3) algebra to logics to work on Clawr `tritfield`. But then again: are GF(3) algorithms portable between different ternary bias? Maybe, expressing them in terms of logic operations is the key to portability?
 
 Frontend optimisations simplify the AST from Clawr’s perspective, but the backend might undo some of those optimisations if the hardware architecture contradicts Clawr’s idea of what is “fundamental.”
 

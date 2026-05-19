@@ -4,7 +4,7 @@
 
 This is the thought that sparked the need for a new programming language.
 
-In the languages I know, such a need would requires duplicating code—which violates DRY—or wrapping one type inside another—a `class` that contains a `struct`—which is awkward.
+In the languages I know, such a need ~~would requires~~ duplicating code—which violates DRY—or wrapping one type inside another—a `class` that contains a `struct`—which is awkward.
 
 In Clawr, I want to be able to define a type once and then specify its "kind" (i.e., `struct`-like vs `class`-like) based on the context in which it is used. This would allow for more flexible and reusable code without duplication.
 
@@ -53,7 +53,7 @@ Rust uses ownership and borrowing to manage memory safety. While this is powerfu
 
 Mental Model:
 
-- `let` variable: A constant value (even if structurally complex)
+- `const` variable: A constant value (even if structurally complex)
 - `mut` variable: A container for data. The data can be copied to another container, but the containers remain independent.
 - `ref` variable: A pointer to an entity. Multiple variables can reference and modify the same entity.
 

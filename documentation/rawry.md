@@ -13,4 +13,4 @@ He asks that you start **solving problems** instead of “building solutions.”
 > - Focus on the domain, not the technology.
 > - Don’t model structures. Model what happens.
 > - Be suspicious of code and tasks that cannot be traced to explicit value.
-> - Be ready to change your design as needs and priorities — and your understanding of them — evolve.
+> - Be ready to change your design as needs and priorities — or just your understanding of them — evolve.

@@ -75,20 +75,28 @@ subset double = real [...] @precision(...) // Hm… @precision in subset?
 subset quadruple = real [...] @precision(...) // Hm… @precision in subset?
 ```
 
+… but using those subsets would presuppose binary. Clawr is not a binary language. It should be *agnostic* to the hardware architecture. They could be added by a binary-only compiler (backend), or they could be part of a `binary` library. There could also be a `ternary` library with subsets optimised for base 3.
+
+```clawr
+subset int27 = integer [-3_812_798_742_493..<3_812_798_742_493]
+subset int54 = integer [(1-3^54)/2..<(3^54-1)/2]
+subset int81 = integer [(1-3^81)/2..<(3^81-1)/2]
+```
+
 The subsets could be parameterised:
 
 ```clawr
 subset int(bits: integer) = integer [-2^(bits-1)..<2^(bits-1)]
 subset uint(bits: integer) = integer [0..<2^bits]
 
-subset int(trits: integer) = integer [-(3^(trits+1)-1)/2...(3^(trits+1)-1)/2]
+subset int(trits: integer) = integer [-(3^trits-1)/2...(3^trits-1)/2]
 
 // ... or perhaps constrained:
 subset int(bits: integer {16, 32, 64, 128})
     = integer [-2^(bits-1)..<2^(bits-1)]
 
 subset int(trits: integer {27, 54, 81, 162, 243})
-    = integer [-(3^(trits+1)-1)/2...(3^(trits+1)-1)/2]
+    = integer [-(3^trits-1)/2...(3^trits-1)/2]
 ```
 
 ### `boolean` ⊂ `ternary`

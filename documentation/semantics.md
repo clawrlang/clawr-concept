@@ -1,4 +1,4 @@
-# **Copy-on-Write Mutation (Rawry’s Law of Claws)**
+# **Copy-on-Write Mutation (Rawry’s Claw)**
 
 [![Rawry](../images/rawry.png)](./rawry.md)
 Rawry hates accidental sharing.
@@ -7,9 +7,9 @@ He hates it with the fiery, domain-defending passion of a lion who has read one 
 
 In Clawr, values travel through your program with well-defined _semantics_—`const`, `mut`, and `ref`—and Rawry makes sure you can always trust the promises made by these keywords:
 
-- `const`: “This is a ‘constant,’ a named value that can never change”
-- `mut`: “This is my ‘container’ that only I can manipulate”
-- `ref`: “This is a reference to a shared structure that can I and others can manipulate”
+- `const`: “This is a *constant value*, it can never change”
+- `mut`: “This is *my container* that only I can manipulate”
+- `ref`: “This is *a reference* to a shared resource that others can manipulate”
 
 But one situation terrifies him more than anything else:
 
@@ -21,7 +21,7 @@ As soon as a mutation is attempted, Rawry blocks it to enforce what we call **Co
 
 ---
 
-## When You Modify Something, Rawry Checks Who Else Is Watching
+## When You Modify Something, Rawry Checks if Others are Watching
 
 Let’s imagine this simple data structure:
 
